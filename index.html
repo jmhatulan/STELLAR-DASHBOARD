@@ -23,9 +23,13 @@
 
       <nav class="menu">
 
-        <a href="#" class="menu-item active">Overview</a>
-        <a href="#" class="menu-item">Progress</a>
-        <a href="#" class="menu-item">Game Mastery</a>
+        <a href="#" class="menu-item active" data-page="overview">Overview</a>
+        <a href="#" class="menu-item" data-page="progress">Progress</a>
+        <a href="#" class="menu-item" data-page="gamemastery">Game Mastery</a>
+
+        <hr class="divider" />
+
+        <a href="#" class="menu-item" data-page="addquestions">Add Questions</a>
 
         <hr class="divider" />
 
@@ -36,26 +40,49 @@
 
     <!-- MAIN CONTENT -->
     <main class="content">
-      <h1>Dashboard Overview</h1>
+      
+      <!-- OVERVIEW PAGE -->
+      <div id="page-overview" class="page">
+        <h1>Dashboard Overview</h1>
 
-      <div class="charts">
+        <div class="charts">
 
-        <div class="chart-card">
-          <h3>Game Attempts Over Time</h3>
-          <canvas id="attemptsChart"></canvas>
+          <div class="chart-card">
+            <h3>Game Attempts Over Time</h3>
+            <canvas id="attemptsChart"></canvas>
+          </div>
+
+          <div class="chart-card">
+            <h3>Average Scores by Game</h3>
+            <canvas id="scoresChart"></canvas>
+          </div>
+
+          <div class="chart-card">
+            <h3>Experience Progress</h3>
+            <canvas id="xpChart"></canvas>
+          </div>
+
         </div>
-
-        <div class="chart-card">
-          <h3>Average Scores by Game</h3>
-          <canvas id="scoresChart"></canvas>
-        </div>
-
-        <div class="chart-card">
-          <h3>Experience Progress</h3>
-          <canvas id="xpChart"></canvas>
-        </div>
-
       </div>
+
+      <!-- PROGRESS PAGE -->
+      <div id="page-progress" class="page" style="display: none;">
+        <h1>Progress</h1>
+        <p style="color: #666;">Progress tracking coming soon...</p>
+      </div>
+
+      <!-- GAME MASTERY PAGE -->
+      <div id="page-gamemastery" class="page" style="display: none;">
+        <h1>Game Mastery</h1>
+        <p style="color: #666;">Game mastery details coming soon...</p>
+      </div>
+
+      <!-- ADD QUESTIONS PAGE -->
+      <div id="page-addquestions" class="page" style="display: none;">
+        <h1>Add Questions</h1>
+        <p style="color: #666;">Add questions interface coming soon...</p>
+      </div>
+
     </main>
 
   </div>
