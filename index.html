@@ -3,91 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>STELLAR Dashboard</title>
+  <title>STELLAR Dashboard - Login</title>
 
-  <link rel="stylesheet" href="css/style.css" />
-  <!-- JAVASCRIPT -->
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/login.css" />
 </head>
 
 <body>
 
-  <div class="layout">
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="logo">
-        🎓 STELLAR
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-logo">
+        <span>🎓</span>
+        <h1>STELLAR DASHBOARD</h1>
       </div>
 
-      <nav class="menu">
-
-        <a href="#" class="menu-item active" data-page="overview">Overview</a>
-        <a href="#" class="menu-item" data-page="progress">Progress</a>
-        <a href="#" class="menu-item" data-page="gamemastery">Game Mastery</a>
-
-        <hr class="divider" />
-
-        <a href="#" class="menu-item" data-page="addquestions">Add Questions</a>
-
-        <hr class="divider" />
-
-        <a href="#" class="menu-item">⬇ Download Report</a>
-        <a href="#" class="menu-item logout">🚪 Logout</a>
-      </nav>
-    </aside>
-
-    <!-- MAIN CONTENT -->
-    <main class="content">
-      
-      <!-- OVERVIEW PAGE -->
-      <div id="page-overview" class="page">
-        <h1>Dashboard Overview</h1>
-
-        <div class="charts">
-
-          <div class="chart-card">
-            <h3>Game Attempts Over Time</h3>
-            <canvas id="attemptsChart"></canvas>
-          </div>
-
-          <div class="chart-card">
-            <h3>Average Scores by Game</h3>
-            <canvas id="scoresChart"></canvas>
-          </div>
-
-          <div class="chart-card">
-            <h3>Experience Progress</h3>
-            <canvas id="xpChart"></canvas>
-          </div>
-
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required />
         </div>
-      </div>
 
-      <!-- PROGRESS PAGE -->
-      <div id="page-progress" class="page" style="display: none;">
-        <h1>Progress</h1>
-        <p style="color: #666;">Progress tracking coming soon...</p>
-      </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required />
+        </div>
 
-      <!-- GAME MASTERY PAGE -->
-      <div id="page-gamemastery" class="page" style="display: none;">
-        <h1>Game Mastery</h1>
-        <p style="color: #666;">Game mastery details coming soon...</p>
-      </div>
-
-      <!-- ADD QUESTIONS PAGE -->
-      <div id="page-addquestions" class="page" style="display: none;">
-        <h1>Add Questions</h1>
-        <p style="color: #666;">Add questions interface coming soon...</p>
-      </div>
-
-    </main>
-
+        <button type="submit" class="login-button">Login</button>
+      </form>
+    </div>
   </div>
 
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      // Redirect to MainPage.html after login
+      window.location.href = "MainPage.html";
+    });
+  </script>
 
-  <script src="js/charts.js"></script>
 </body>
 </html>
