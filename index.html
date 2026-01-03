@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STELLAR Dashboard</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- JAVASCRIPT -->
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">
+        🎓 STELLAR
+      </div>
+
+      <nav class="menu">
+
+        <a href="#" class="menu-item active">Overview</a>
+        <a href="#" class="menu-item">Progress</a>
+        <a href="#" class="menu-item">Game Mastery</a>
+
+        <hr class="divider" />
+
+        <a href="#" class="menu-item">⬇ Download Report</a>
+        <a href="#" class="menu-item logout">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+      <h1>Dashboard Overview</h1>
+
+      <div class="charts">
+
+        <div class="chart-card">
+          <h3>Game Attempts Over Time</h3>
+          <canvas id="attemptsChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Average Scores by Game</h3>
+          <canvas id="scoresChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Experience Progress</h3>
+          <canvas id="xpChart"></canvas>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+
+  <script src="js/charts.js"></script>
+</body>
+</html>
