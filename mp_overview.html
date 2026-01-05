@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Overview</title>
+  
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Dashboard Overview</h1>
+
+  <div class="charts">
+
+    <div class="chart-card">
+      <h3>Game Attempts Over Time</h3>
+      <canvas id="attemptsChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>Average Scores by Game</h3>
+      <canvas id="scoresChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h3>Experience Progress</h3>
+      <canvas id="xpChart"></canvas>
+    </div>
+
+  </div>
+
+  <script src="js/mp_overview.js"></script>
+</body>
+</html>
