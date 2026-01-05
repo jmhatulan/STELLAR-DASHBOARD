@@ -29,15 +29,48 @@
         </div>
 
         <button type="submit" class="login-button">Login</button>
+        <div id="loginError" style="color: red; margin-top: 10px; display: none;"></div>
       </form>
     </div>
   </div>
 
   <script>
-    document.getElementById("loginForm").addEventListener("submit", function (e) {
+    const API_BASE_URL = 'https://stellar-backend-ki78.onrender.com';
+    
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-      // Redirect to MainPage.html after login
-      window.location.href = "MainPage.html";
+      
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const errorDiv = document.getElementById("loginError");
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        if (!response.ok) {
+          const data = await response.json();
+          errorDiv.textContent = data.message || 'Login failed';
+          errorDiv.style.display = 'block';
+          return;
+        }
+        
+        const data = await response.json();
+        localStorage.setItem('jwtToken', data.token);
+        localStorage.setItem('adminUsername', username);
+        console.log('Admin logged in successfully');
+        window.location.href = "MainPage.html";
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        errorDiv.textContent = 'Connection error. Please check the backend server.';
+        errorDiv.style.display = 'block';
+      }
     });
   </script>
 
