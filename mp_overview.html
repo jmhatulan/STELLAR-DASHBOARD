@@ -11,32 +11,181 @@
   <style>
     body {
       margin: 0;
-      padding: 0;
+      padding: 20px;
       background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    }
+
+    .overview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .overview-header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .view-filter {
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .full-width {
+      grid-column: 1;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .chart-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      background: white;
+    }
+
+    .chart-card h3 {
+      margin: 0 0 20px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
+      margin-bottom: 30px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #f0f0f0;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+      width: 10%;
+      border-radius: 6px;
+    }
+
+    .progress-label {
+      font-size: 14px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    .performance-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #333;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .performance-label {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+
+    @media (max-width: 1200px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 
 <body>
-  <h1>Dashboard Overview</h1>
+  <div class="overview-header">
+    <h1>Dashboard Overview</h1>
+    <select class="view-filter">
+      <option>All Grade</option>
+      <option>Grade 1</option>
+      <option>Grade 2</option>
+      <option>Grade 3</option>
+    </select>
+  </div>
 
-  <div class="charts">
-
-    <div class="chart-card">
-      <h3>Game Attempts Over Time</h3>
-      <canvas id="attemptsChart"></canvas>
+  <div class="grid-container">
+    <!-- Students Engagement -->
+    <div class="chart-card full-width">
+      <h3>Students Engagment</h3>
+      <div class="chart-container">
+        <canvas id="engagementChart"></canvas>
+      </div>
     </div>
 
-    <div class="chart-card">
-      <h3>Average Scores by Game</h3>
-      <canvas id="scoresChart"></canvas>
-    </div>
+    <!-- Middle Row -->
+    <div class="grid-2">
+      <!-- Left Column -->
+      <div class="left-column">
+        <!-- Story Progress -->
+        <div class="chart-card">
+          <h3>Story Progress</h3>
+          <div style="margin-top: 30px;">
+            <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">Class's Average Story Completed</p>
+            <div class="progress-bar">
+              <div class="progress-fill"></div>
+            </div>
+            <div class="progress-label">10%</div>
+          </div>
+        </div>
 
-    <div class="chart-card">
-      <h3>Experience Progress</h3>
-      <canvas id="xpChart"></canvas>
-    </div>
+        <!-- Average Performance -->
+        <div class="chart-card">
+          <h3>Average Performance</h3>
+          <div class="performance-value">XXXX PTS.</div>
+          <div class="performance-label">Students Average Challenge Score</div>
+        </div>
+      </div>
 
+      <!-- Right Column -->
+      <div class="right-column">
+        <!-- Weekly Challenge Attempts -->
+        <div class="chart-card">
+          <h3>Weekly Challenge Attempts</h3>
+          <div class="chart-container">
+            <canvas id="challengeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/mp_overview.js"></script>

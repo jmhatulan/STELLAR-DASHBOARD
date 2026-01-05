@@ -6,17 +6,336 @@
   <title>Progress</title>
   
   <link rel="stylesheet" href="css/style.css" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       margin: 0;
-      padding: 0;
+      padding: 20px;
       background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    }
+
+    h1 {
+      margin: 0 0 30px 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .progress-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: white;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+    }
+
+    .progress-card-header {
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      border-bottom: 1px solid #eee;
+      padding: 15px 20px;
+      margin: 0;
+    }
+
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      flex: 1;
+    }
+
+    .progress-section {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .charts-section {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+      padding: 20px;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .left-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .middle-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .right-section {
+      display: none;
+    }
+
+    .progress-info {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 12px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #f0f0f0;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+      width: 10%;
+      border-radius: 6px;
+    }
+
+    .progress-percentage {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .chart-donut {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .accuracy-label {
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      line-height: 1.3;
+      font-weight: 500;
+    }
+
+    .chart-bar {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chart-label {
+      font-size: 10px;
+      color: #666;
+      text-align: center;
+    }
+
+    canvas {
+      display: block !important;
+      width: auto !important;
+      height: auto !important;
+      max-width: none !important;
+      max-height: none !important;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-container {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 
 <body>
-  <h1>Progress</h1>
-  <p style="color: #666;">Progress tracking coming soon...</p>
+  <h1>Class Progress</h1>
+
+  <div class="grid-container">
+    <!-- Card 1: Grade 4 - A1 -->
+    <div class="progress-card">
+      <div class="progress-card-header">Grade 4- A1</div>
+      <div class="card-content">
+        <div class="progress-section">
+          <div class="progress-info">Average Chapters Completed 1/6</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="progress-percentage">10%</div>
+        </div>
+        <div class="charts-section">
+          <div class="left-section">
+            <div class="chart-donut">
+              <canvas id="chart-1" width="120" height="120"></canvas>
+            </div>
+            <div class="accuracy-label">Average Quiz<br>Accuracy</div>
+          </div>
+          <div class="middle-section">
+            <div class="chart-bar">
+              <canvas id="activity-1" width="400" height="120"></canvas>
+            </div>
+            <div class="chart-label">Activity Last Week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Grade 4 - A1 -->
+    <div class="progress-card">
+      <div class="progress-card-header">Grade 4- A1</div>
+      <div class="card-content">
+        <div class="progress-section">
+          <div class="progress-info">Average Chapters Completed 1/6</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="progress-percentage">10%</div>
+        </div>
+        <div class="charts-section">
+          <div class="left-section">
+            <div class="chart-donut">
+              <canvas id="chart-2" width="120" height="120"></canvas>
+            </div>
+            <div class="accuracy-label">Average Quiz<br>Accuracy</div>
+          </div>
+          <div class="middle-section">
+            <div class="chart-bar">
+              <canvas id="activity-2" width="400" height="120"></canvas>
+            </div>
+            <div class="chart-label">Activity Last Week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Grade 5 - B1 -->
+    <div class="progress-card">
+      <div class="progress-card-header">Grade 5- B1</div>
+      <div class="card-content">
+        <div class="progress-section">
+          <div class="progress-info">Average Chapters Completed 1/6</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="progress-percentage">15%</div>
+        </div>
+        <div class="charts-section">
+          <div class="left-section">
+            <div class="chart-donut">
+              <canvas id="chart-3" width="120" height="120"></canvas>
+            </div>
+            <div class="accuracy-label">Average Quiz<br>Accuracy</div>
+          </div>
+          <div class="middle-section">
+            <div class="chart-bar">
+              <canvas id="activity-3" width="400" height="120"></canvas>
+            </div>
+            <div class="chart-label">Activity Last Week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Grade 5 - B2 -->
+    <div class="progress-card">
+      <div class="progress-card-header">Grade 5- B2</div>
+      <div class="card-content">
+        <div class="progress-section">
+          <div class="progress-info">Average Chapters Completed 1/6</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="progress-percentage">20%</div>
+        </div>
+        <div class="charts-section">
+          <div class="left-section">
+            <div class="chart-donut">
+              <canvas id="chart-4" width="120" height="120"></canvas>
+            </div>
+            <div class="accuracy-label">Average Quiz<br>Accuracy</div>
+          </div>
+          <div class="middle-section">
+            <div class="chart-bar">
+              <canvas id="activity-4" width="400" height="120"></canvas>
+            </div>
+            <div class="chart-label">Activity Last Week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5: Grade 6 - C1 -->
+    <div class="progress-card">
+      <div class="progress-card-header">Grade 6- C1</div>
+      <div class="card-content">
+        <div class="progress-section">
+          <div class="progress-info">Average Chapters Completed 1/6</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="progress-percentage">10%</div>
+        </div>
+        <div class="charts-section">
+          <div class="left-section">
+            <div class="chart-donut">
+              <canvas id="chart-5" width="120" height="120"></canvas>
+            </div>
+            <div class="accuracy-label">Average Quiz<br>Accuracy</div>
+          </div>
+          <div class="middle-section">
+            <div class="chart-bar">
+              <canvas id="activity-5" width="400" height="120"></canvas>
+            </div>
+            <div class="chart-label">Activity Last Week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 6: Grade 6 - C2 -->
+    <div class="progress-card">
+      <div class="progress-card-header">Grade 6 C2</div>
+      <div class="card-content">
+        <div class="progress-section">
+          <div class="progress-info">Average Chapters Completed 1/6</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="progress-percentage">10%</div>
+        </div>
+        <div class="charts-section">
+          <div class="left-section">
+            <div class="chart-donut">
+              <canvas id="chart-6" width="120" height="120"></canvas>
+            </div>
+            <div class="accuracy-label">Average Quiz<br>Accuracy</div>
+          </div>
+          <div class="middle-section">
+            <div class="chart-bar">
+              <canvas id="activity-6" width="400" height="120"></canvas>
+            </div>
+            <div class="chart-label">Activity Last Week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/mp_progress.js"></script>
 </body>
 </html>

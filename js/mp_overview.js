@@ -1,65 +1,92 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // ---- SAMPLE DATA ----
-  const attemptsData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
-    values: [3, 5, 4, 7, 6]
+  // ---- ENGAGEMENT DATA ----
+  const engagementData = {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon"],
+    values: [45, 38, 50, 42, 55, 48, 60, 58, 65, 52, 70, 68, 75, 70, 78]
   };
 
-  const scoresData = {
-    labels: ["Two Truths", "Text Extract", "Scrutinize"],
-    values: [78, 85, 92]
+  const challengeData = {
+    labels: ["Text Extract", "Two Truths", "Statement Scrutinize"],
+    values: [100, 60, 75]
   };
 
-  const xpData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    values: [100, 250, 400, 600]
-  };
-
-  // ---- INITIALIZE CHARTS ----
-  // ATTEMPTS CHART
-  new Chart(document.getElementById("attemptsChart"), {
+  // ---- INITIALIZE ENGAGEMENT CHART (Area Chart) ----
+  new Chart(document.getElementById("engagementChart"), {
     type: "line",
     data: {
-      labels: attemptsData.labels,
+      labels: engagementData.labels,
       datasets: [{
-        label: "Attempts",
-        data: attemptsData.values,
-        borderWidth: 2,
-        borderColor: "#2563eb",
-        backgroundColor: "rgba(37,99,235,0.1)"
-      }]
-    },
-    options: { responsive: true }
-  });
-
-  // SCORE CHART
-  new Chart(document.getElementById("scoresChart"), {
-    type: "bar",
-    data: {
-      labels: scoresData.labels,
-      datasets: [{
-        label: "Average Score",
-        data: scoresData.values,
-        borderWidth: 2,
-        backgroundColor: "#4f46e5"
-      }]
-    },
-    options: { responsive: true }
-  });
-
-  // XP CHART
-  new Chart(document.getElementById("xpChart"), {
-    type: "radar",
-    data: {
-      labels: xpData.labels,
-      datasets: [{
-        label: "XP",
-        data: xpData.values,
+        label: "Month's Daily Login",
+        data: engagementData.values,
         borderWidth: 2,
         borderColor: "#10b981",
-        backgroundColor: "rgba(16,185,129,0.2)"
+        backgroundColor: "rgba(16, 185, 129, 0.1)",
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 5
       }]
     },
-    options: { responsive: true }
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: "#f0f0f0"
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+
+  // ---- INITIALIZE CHALLENGE ATTEMPTS CHART (Bar Chart) ----
+  new Chart(document.getElementById("challengeChart"), {
+    type: "bar",
+    data: {
+      labels: challengeData.labels,
+      datasets: [{
+        label: "Attempts",
+        data: challengeData.values,
+        backgroundColor: ["#e879f9", "#fbbf24", "#10b981"],
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: "x",
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: "#f0f0f0"
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
   });
 });
+

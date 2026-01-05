@@ -7,16 +7,282 @@
   
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    body {
+    * {
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      padding: 30px;
       background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 600;
+      color: #000;
+    }
+
+    .dropdown {
+      padding: 8px 15px;
+      border: 1px solid #999;
+      border-radius: 6px;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+      appearance: none;
+      padding-right: 30px;
+      background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%2212%22%20height=%228%22%20viewBox=%220%200%2012%208%22%3E%3Cpath%20fill=%22%23333%22%20d=%22M1%200l5%208%205-8z%22/%3E%3C/svg%3E');
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px;
+    }
+
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .mastery-card {
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      padding: 30px;
+      background: white;
+      text-align: center;
+    }
+
+    .mastery-card h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .card-points {
+      font-size: 36px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .leaderboards-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .leaderboard {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .leaderboard-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      background: #f9f9f9;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .leaderboard-table thead tr {
+      background: #f9f9f9;
+      border-bottom: 1px solid #eee;
+    }
+
+    .leaderboard-table th {
+      padding: 12px 15px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+    }
+
+    .leaderboard-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .leaderboard-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    @media (max-width: 1200px) {
+      .cards-container,
+      .leaderboards-container {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 
 <body>
-  <h1>Game Mastery</h1>
-  <p style="color: #666;">Game mastery details coming soon...</p>
+  <div class="header">
+    <h1>Game Mastery</h1>
+    <select class="dropdown">
+      <option>All Grade</option>
+      <option>Grade 4</option>
+      <option>Grade 5</option>
+      <option>Grade 6</option>
+    </select>
+  </div>
+
+  <div class="cards-container">
+    <!-- Text Extract Card -->
+    <div class="mastery-card">
+      <h3>Text Extract</h3>
+      <div class="card-points">XXXX PTS.</div>
+      <div class="card-subtitle">Students Average Challenge<br>Score</div>
+    </div>
+
+    <!-- Two Truths Card -->
+    <div class="mastery-card">
+      <h3>Two Truths</h3>
+      <div class="card-points">XXXX PTS.</div>
+      <div class="card-subtitle">Students Average Challenge<br>Score</div>
+    </div>
+
+    <!-- Statement Scrutinize Card -->
+    <div class="mastery-card">
+      <h3>Statement Scrutinize</h3>
+      <div class="card-points">XXXX PTS.</div>
+      <div class="card-subtitle">Students Average Challenge<br>Score</div>
+    </div>
+  </div>
+
+  <div class="leaderboards-container">
+    <!-- Text Extract Leaderboard -->
+    <div class="leaderboard">
+      <div class="leaderboard-header">Text Extract Leaderboard</div>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>John Dope</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Jane Doe</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>John Dope</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Two Truths Leaderboard -->
+    <div class="leaderboard">
+      <div class="leaderboard-header">Two Truths Leaderboard</div>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>John Dope</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Jane Doe</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>John Dope</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Statement Scrutinize Leaderboard -->
+    <div class="leaderboard">
+      <div class="leaderboard-header">Statement Scrutinize Leaderboard</div>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>John Dope</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>Jane Doe</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>John Dope</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/mp_gamemastery.js"></script>
 </body>
 </html>
