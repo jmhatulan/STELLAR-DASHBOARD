@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Progress</title>
+  
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      padding: 5px;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    }
+
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    #back-button {
+      padding: 10px 16px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    #back-button:hover {
+      background: #059669;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 600;
+      color: #000;
+    }
+
+    .main-container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .student-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      background: white;
+    }
+
+    .student-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .student-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #333;
+    }
+
+    .student-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .student-info p {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .progress-item {
+      margin-bottom: 15px;
+    }
+
+    .progress-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .progress-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+      width: 16%;
+      border-radius: 4px;
+    }
+
+    .progress-percentage {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .student-list {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: white;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 350px;
+    }
+
+    .student-list-header {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      background: #f9f9f9;
+    }
+
+    .student-list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .student-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .student-list-item:hover {
+      background: #f9f9f9;
+    }
+
+    .student-list-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #333;
+    }
+
+    .student-list-info h4 {
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .student-list-info p {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .right-panel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      grid-auto-rows: max-content;
+    }
+
+    .card-engagement {
+      grid-row: span 2;
+    }
+
+    .card-challenge-achievements {
+      grid-column: span 2;
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      background: white;
+    }
+
+    .card-header {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .playtime-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      text-align: center;
+    }
+
+    .playtime-item {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .playtime-label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .engagement-chart {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .challenge-attempts {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .challenge-bar {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .bar-label {
+      font-size: 11px;
+      color: #666;
+      text-align: left;
+      min-width: 60px;
+    }
+
+    .bar-chart {
+      width: 120px;
+      height: 30px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      flex-grow: 1;
+    }
+
+    .bar-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: auto;
+      top: 0;
+      border-radius: 4px;
+      height: 100% !important;
+    }
+
+    .bar-label {
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      flex: 1;
+    }
+
+    .bar-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      min-width: 30px;
+      text-align: left;
+    }
+
+    .challenge-performance {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+
+    .performance-score {
+      font-size: 32px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .performance-subtitle {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .achievement-badge {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .score-chart {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    #charts-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    @media (max-width: 1400px) {
+      .right-panel {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .main-container {
+        grid-template-columns: 1fr;
+      }
+
+      .right-panel {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header-row">
+    <h1>Student Progress</h1>
+    <button id="back-button" onclick="if(window.parent !== window) { window.parent.document.getElementById('page-progress').src = 'mp_progress.html'; } else { window.history.back(); }">← Back to Progress</button>
+  </div>
+
+  <div class="main-container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <!-- Student Card -->
+      <div class="student-card">
+        <div class="student-header">
+          <div class="student-avatar"></div>
+          <div class="student-info">
+            <h3>John Smith</h3>
+            <p>Beginner</p>
+          </div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-label">Chapters Completed 1/6</div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <div class="progress-percentage">16%</div>
+        </div>
+      </div>
+
+      <!-- Student List -->
+      <div class="student-list">
+        <div class="student-list-header">Student List</div>
+        <div class="student-list-item">
+          <div class="student-list-avatar"></div>
+          <div class="student-list-info">
+            <h4>Jane Doe</h4>
+            <p>Beginner: Last Login Today</p>
+          </div>
+        </div>
+        <div class="student-list-item">
+          <div class="student-list-avatar"></div>
+          <div class="student-list-info">
+            <h4>John Dope</h4>
+            <p>Beginner: Last Login Yesterday</p>
+          </div>
+        </div>
+        <div class="student-list-item">
+          <div class="student-list-avatar"></div>
+          <div class="student-list-info">
+            <h4>Jane Doe</h4>
+            <p>Beginner: Last Login Today</p>
+          </div>
+        </div>
+        <div class="student-list-item">
+          <div class="student-list-avatar"></div>
+          <div class="student-list-info">
+            <h4>John Dope</h4>
+            <p>Beginner: Last Login Yesterday</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <!-- Row 1: Playtime Card -->
+      <div class="card">
+        <div class="card-header">Playtime</div>
+        <div class="playtime-section">
+          <div class="playtime-item">
+            <span class="playtime-label">Reading Streak:</span>
+            <br>7 Days Active
+          </div>
+          <div class="playtime-item">
+            <span class="playtime-label">Last Active:</span>
+            <br>8 Hours Ago
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 1: Total Challenge Attempts Card -->
+      <div class="card">
+        <div class="card-header">Total Challenge Attempts</div>
+        <div class="challenge-attempts">
+          <div class="challenge-bar">
+            <div class="bar-label">Text Extract</div>
+            <div class="bar-chart">
+              <div class="bar-fill" style="background: #ec4899; width: 100%;"></div>
+            </div>
+            <div class="bar-value">100</div>
+          </div>
+          <div class="challenge-bar">
+            <div class="bar-label">Two Truths</div>
+            <div class="bar-chart">
+              <div class="bar-fill" style="background: #eab308; width: 60%;"></div>
+            </div>
+            <div class="bar-value">60</div>
+          </div>
+          <div class="challenge-bar">
+            <div class="bar-label">Statement Scrutinize</div>
+            <div class="bar-chart">
+              <div class="bar-fill" style="background: #10b981; width: 75%;"></div>
+            </div>
+            <div class="bar-value">75</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 1-2: Engagement Card (spans 2 rows) -->
+      <div class="card card-engagement">
+        <div class="card-header">Engagement</div>
+        <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Month's Daily Login</p>
+        <div class="engagement-chart">
+          <canvas id="engagement-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Row 2: Challenge Performance Card -->
+      <div class="card">
+        <div class="card-header">Challenge Performance</div>
+        <div class="challenge-performance">
+          <div class="performance-score">XXXX PTS.</div>
+          <div class="performance-subtitle">Student's Average Challenge<br>Score</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Achievements Card -->
+      <div class="card">
+        <div class="card-header">Achievements</div>
+        <div class="achievements-grid">
+          <div class="achievement-badge">🎮</div>
+          <div class="achievement-badge">🛡️</div>
+          <div class="achievement-badge">⭐</div>
+          <div class="achievement-badge">🏆</div>
+          <div class="achievement-badge">🎮</div>
+          <div class="achievement-badge">🛡️</div>
+          <div class="achievement-badge">⭐</div>
+          <div class="achievement-badge">🏆</div>
+        </div>
+      </div>
+
+      <!-- Score Charts Section -->
+      <div class="card full-width">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+          <div>
+            <div class="card-header">Text Extract Score</div>
+            <div class="score-chart">
+              <canvas id="text-extract-chart"></canvas>
+            </div>
+          </div>
+          <div>
+            <div class="card-header">Two Truths</div>
+            <div class="score-chart">
+              <canvas id="two-truths-chart"></canvas>
+            </div>
+          </div>
+          <div>
+            <div class="card-header">Statement Scrutinize</div>
+            <div class="score-chart">
+              <canvas id="statement-scrutinize-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Engagement Chart
+      const engagementCtx = document.getElementById('engagement-chart').getContext('2d');
+      new Chart(engagementCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+          datasets: [{
+            label: 'Daily Login',
+            data: [10, 20, 15, 25, 18],
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#10b981'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 30,
+              ticks: {
+                font: { size: 10 }
+              }
+            },
+            x: {
+              ticks: {
+                font: { size: 10 }
+              }
+            }
+          }
+        }
+      });
+
+      // Text Extract Chart
+      const textExtractCtx = document.getElementById('text-extract-chart').getContext('2d');
+      new Chart(textExtractCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+          datasets: [{
+            label: 'Score',
+            data: [30, 50, 40, 70, 60],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: '#3b82f6'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 80,
+              ticks: {
+                font: { size: 10 }
+              }
+            },
+            x: {
+              ticks: {
+                font: { size: 10 }
+              }
+            }
+          }
+        }
+      });
+
+      // Two Truths Chart
+      const twoTruthsCtx = document.getElementById('two-truths-chart').getContext('2d');
+      new Chart(twoTruthsCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+          datasets: [{
+            label: 'Score',
+            data: [30, 50, 40, 70, 60],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: '#3b82f6'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 80,
+              ticks: {
+                font: { size: 10 }
+              }
+            },
+            x: {
+              ticks: {
+                font: { size: 10 }
+              }
+            }
+          }
+        }
+      });
+
+      // Statement Scrutinize Chart
+      const statementCtx = document.getElementById('statement-scrutinize-chart').getContext('2d');
+      new Chart(statementCtx, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+          datasets: [{
+            label: 'Score',
+            data: [30, 50, 40, 70, 60],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 3,
+            pointBackgroundColor: '#3b82f6'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 80,
+              ticks: {
+                font: { size: 10 }
+              }
+            },
+            x: {
+              ticks: {
+                font: { size: 10 }
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

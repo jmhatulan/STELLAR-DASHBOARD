@@ -1,4 +1,20 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // Add click handlers to progress cards for redirect
+  const progressCards = document.querySelectorAll('.progress-card');
+  progressCards.forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function() {
+      // Load detail page in the same iframe
+      if (window.parent !== window) {
+        // If in iframe, update parent's iframe src
+        window.parent.document.getElementById('page-progress').src = 'mp_progress_detail.html';
+      } else {
+        // If not in iframe, navigate normally
+        window.location.href = 'mp_progress_detail.html';
+      }
+    });
+  });
+
   // Chart configuration for all cards
   const chartsConfig = [
     { donutId: "chart-1", barId: "activity-1" },
