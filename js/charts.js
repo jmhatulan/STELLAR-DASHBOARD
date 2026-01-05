@@ -74,6 +74,19 @@ document.addEventListener("DOMContentLoaded", function () {
   const menuItems = document.querySelectorAll(".menu-item[data-page]");
   const pages = document.querySelectorAll(".page");
 
+  // Load external page content
+  async function loadPageContent(pageName) {
+    if (pageName === "addquestions") {
+      try {
+        const response = await fetch("addquestions.html");
+        const content = await response.text();
+        document.getElementById(`page-${pageName}`).innerHTML = content;
+      } catch (error) {
+        console.error(`Failed to load page: ${pageName}`, error);
+      }
+    }
+  }
+
   menuItems.forEach(item => {
     item.addEventListener("click", function (e) {
       e.preventDefault();
@@ -84,17 +97,20 @@ document.addEventListener("DOMContentLoaded", function () {
       // Hide all pages
       pages.forEach(page => page.style.display = "none");
 
-      // Show the selected page
-      document.getElementById(`page-${pageName}`).style.display = "block";
+      // Load external content if needed
+      loadPageContent(pageName).then(() => {
+        // Show the selected page
+        document.getElementById(`page-${pageName}`).style.display = "block";
 
-      // Update active menu item
-      menuItems.forEach(mi => mi.classList.remove("active"));
-      this.classList.add("active");
+        // Update active menu item
+        menuItems.forEach(mi => mi.classList.remove("active"));
+        this.classList.add("active");
 
-      // Initialize charts if showing overview page
-      if (pageName === "overview") {
-        initializeCharts();
-      }
+        // Initialize charts if showing overview page
+        if (pageName === "overview") {
+          initializeCharts();
+        }
+      });
     });
   });
 
