@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="css/style.css" />
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2pdf CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -373,13 +375,59 @@
         grid-template-columns: repeat(2, 1fr);
       }
     }
+
+    /* PDF Export Styles */
+    #export-pdf-btn {
+      padding: 10px 16px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    #export-pdf-btn:hover {
+      background: #2563eb;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .header-row {
+        margin-bottom: 20px;
+      }
+
+      #back-button,
+      #export-pdf-btn {
+        display: none;
+      }
+
+      .main-container {
+        gap: 15px;
+      }
+
+      .card,
+      .student-card,
+      .student-list {
+        page-break-inside: avoid;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+    }
   </style>
 </head>
 
 <body>
   <div class="header-row">
     <h1>Student Progress</h1>
-    <button id="back-button" onclick="if(window.parent !== window) { window.parent.document.getElementById('page-progress').src = 'mp_progress.html'; } else { window.history.back(); }">← Back to Progress</button>
+    <div style="display: flex; gap: 10px;">
+      <button id="export-pdf-btn" onclick="exportToPDF()">📥 Export to PDF</button>
+      <button id="back-button" onclick="if(window.parent !== window) { window.parent.document.getElementById('page-progress').src = 'mp_progress.html'; } else { window.history.back(); }">← Back to Progress</button>
+    </div>
   </div>
 
   <div class="main-container">

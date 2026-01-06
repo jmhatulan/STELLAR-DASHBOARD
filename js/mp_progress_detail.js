@@ -380,3 +380,168 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize
   fetchClassStudents();
 });
+
+// PDF Export Function
+function exportToPDF() {
+  const studentName = document.querySelector('.student-info h3')?.textContent || 'Student Progress';
+  const studentGrade = document.querySelector('.student-info p')?.textContent || 'N/A';
+  const playtimeItems = document.querySelectorAll('.playtime-item');
+  const performanceScore = document.querySelector('.performance-score')?.textContent || '0 PTS.';
+  const challengeBars = document.querySelectorAll('.challenge-bar');
+  
+  let challengeAttemptsHTML = '';
+  challengeBars.forEach(bar => {
+    const label = bar.querySelector('.bar-label')?.textContent || '';
+    const value = bar.querySelector('.bar-value')?.textContent || '0';
+    challengeAttemptsHTML += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;">${label}</td><td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${value}</td></tr>`;
+  });
+
+  let playtimeHTML = '';
+  playtimeItems.forEach(item => {
+    playtimeHTML += `<p style="margin: 5px 0; font-size: 12px; line-height: 1.6;">${item.innerHTML}</p>`;
+  });
+
+  const reportHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          max-width: 800px;
+          margin: 0;
+          padding: 20px;
+          background: white;
+          color: #333;
+        }
+        .report-header {
+          margin-bottom: 10px;
+        }
+        .student-name {
+          font-size: 24px;
+          font-weight: bold;
+          margin-bottom: 5px;
+          color: #000;
+        }
+        .student-grade {
+          font-size: 12px;
+          color: #666;
+          margin-bottom: 10px;
+        }
+        .separator {
+          border-top: 2px solid #000;
+          margin-bottom: 20px;
+        }
+        .section {
+          margin-bottom: 20px;
+          page-break-inside: avoid;
+        }
+        .section-title {
+          font-size: 14px;
+          font-weight: bold;
+          background: #f5f5f5;
+          padding: 8px 10px;
+          margin-bottom: 10px;
+          border-left: 4px solid #10b981;
+        }
+        .section-content {
+          padding: 0 10px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+        }
+        .two-column {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 20px;
+        }
+        .info-box {
+          padding: 10px;
+          background: #fafafa;
+          border: 1px solid #eee;
+          border-radius: 4px;
+          font-size: 12px;
+          line-height: 1.6;
+        }
+        .metric {
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0;
+          border-bottom: 1px solid #eee;
+          font-size: 12px;
+        }
+        .metric:last-child {
+          border-bottom: none;
+        }
+        .metric-label {
+          font-weight: 500;
+          color: #666;
+        }
+        .metric-value {
+          font-weight: bold;
+          color: #333;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="report-header">
+        <div class="student-name">${studentName}</div>
+        <div class="student-grade">${studentGrade}</div>
+      </div>
+      <div class="separator"></div>
+
+      <div class="two-column">
+        <div class="section">
+          <div class="section-title">📊 Playtime Activity</div>
+          <div class="info-box">
+            ${playtimeHTML}
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">🎯 Challenge Performance</div>
+          <div class="info-box">
+            <div class="metric">
+              <span class="metric-label">Average Score:</span>
+              <span class="metric-value">${performanceScore}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📈 Total Challenge Attempts</div>
+        <div class="section-content">
+          <table>
+            <tbody>
+              ${challengeAttemptsHTML}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📋 Report Generated</div>
+        <div class="info-box" style="font-size: 11px;">
+          Generated on: ${new Date().toLocaleString()}<br>
+          Report Type: Student Progress Detail
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const opt = {
+    margin: 10,
+    filename: `${studentName}_Progress_Report.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+  };
+
+  html2pdf().set(opt).from(reportHTML).save();
+}
