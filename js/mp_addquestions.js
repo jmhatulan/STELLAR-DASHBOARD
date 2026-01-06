@@ -27,7 +27,7 @@ function isStatementScrutinizeFormat(input) {
     return regex.test(input);
 }
 
-
+const baseURL = "https://stellar-backend-ki78.onrender.com";
 
 // PAGE LOGIC:
 const container = document.getElementById("questionsContainer");
@@ -76,7 +76,7 @@ ${textPrompt}
     while (acceptedCount < targetCount && safetyCounter < targetCount * 3) {
         safetyCounter++;
 
-        const response = await fetch("/model/chat", {
+        const response = await fetch(`${baseURL}/api/model/generate-question`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -144,7 +144,7 @@ submitBtn.addEventListener("click", async () => {
         const question = sections[1].innerText.replace("Question", "").trim();
         const answer = sections[2].innerText.replace("Answer", "").trim();
 
-        await fetch("/question/create", {
+        await fetch(`${baseURL}/api/game/create-question`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
