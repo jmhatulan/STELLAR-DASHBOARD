@@ -13,10 +13,16 @@ document.addEventListener("DOMContentLoaded", function () {
   let engagementChart = null;
   let challengeChart = null;
 
-  // Fetch dashboard overview data
-  async function fetchDashboardData() {
+  // Fetch dashboard overview data (optionally filtered by gradeLevel)
+  async function fetchDashboardData(gradeLevel = null) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/dashboard/overview`, {
+      let url = `${API_BASE_URL}/api/admin/dashboard/overview`;
+      if (gradeLevel && gradeLevel !== 'All Grade') {
+        const grade = parseInt(gradeLevel.replace('Grade ', ''));
+        url += `?gradeLevel=${grade}`;
+      }
+
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -180,6 +186,16 @@ document.addEventListener("DOMContentLoaded", function () {
     updateProgressBars(sampleData);
   }
 
-  // Fetch data on page load
-  fetchDashboardData();
+  // Handle grade filter dropdown change
+  const gradeDropdown = document.querySelector('.view-filter');
+  if (gradeDropdown) {
+    gradeDropdown.addEventListener('change', function () {
+      const selectedGrade = this.value;
+      fetchDashboardData(selectedGrade);
+    });
+  }
+
+  // Fetch data on page load (use currently selected grade if present)
+  const initialGrade = document.querySelector('.view-filter')?.value || null;
+  fetchDashboardData(initialGrade);
 });
