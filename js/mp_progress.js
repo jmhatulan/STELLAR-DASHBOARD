@@ -82,6 +82,10 @@ document.addEventListener("DOMContentLoaded", function () {
       // Add redirect click handler
       card.style.cursor = 'pointer';
       card.addEventListener('click', function() {
+        // Store grade and section in sessionStorage for the detail page
+        sessionStorage.setItem('selectedGrade', classData.gradeLevel.toString());
+        sessionStorage.setItem('selectedSection', classData.section);
+        
         if (window.parent !== window) {
           window.parent.document.getElementById('page-progress').src = 'mp_progress_detail.html';
         } else {
