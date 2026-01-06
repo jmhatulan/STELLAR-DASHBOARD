@@ -35,6 +35,11 @@ const generateBtn = document.getElementById("generateBtn");
 const submitBtn = document.getElementById("submitBtn");
 const promptInput = document.getElementById("textPrompt");
 const submitModeSwitch = document.getElementById("submitModeSwitch");
+const discardAllBtn = document.getElementById("discardAllBtn");
+
+discardAllBtn.addEventListener("click", () => {
+    container.innerHTML = "";
+});
 
 // Auto-expand textarea
 promptInput.addEventListener("input", () => {
@@ -115,14 +120,31 @@ ${textPrompt}
         card.dataset.gameID = getGameID(gameMode);
 
         card.innerHTML = `
-      <input type="checkbox" class="select-question" />
-      <div class="section"><strong>Text Prompt</strong><br />${passage}</div>
-      <div class="section"><strong>Question</strong><br />${question}</div>
-      <div class="section"><strong>Answer</strong><br />${answer}</div>
-    `;
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="gamemode-label gamemode-${gameMode.toLowerCase()}">
+            ${gameMode === "Extract" ? "Text Extract" :
+                gameMode === "Truth" ? "Two Truths" :
+                    "Statement Scrutinize"}
+            </span>
+
+            <div>
+            <input type="checkbox" class="select-question" />
+            <button class="discard-btn">Discard</button>
+            </div>
+        </div>
+
+        <div class="section"><strong>Text Prompt</strong><br />${passage}</div>
+        <div class="section"><strong>Question</strong><br />${question}</div>
+        <div class="section"><strong>Answer</strong><br />${answer}</div>
+        `;
 
         container.appendChild(card);
         acceptedCount++;
+
+        card.querySelector(".discard-btn").addEventListener("click", () => {
+            card.remove();
+        });
+
 
         // Ask for another
         messages.push({ role: "user", content: "Another" });
