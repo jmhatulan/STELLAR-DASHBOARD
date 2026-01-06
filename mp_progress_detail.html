@@ -390,50 +390,22 @@
         <div class="student-header">
           <div class="student-avatar"></div>
           <div class="student-info">
-            <h3>John Smith</h3>
-            <p>Beginner</p>
+            <h3>Select a student</h3>
+            <p>Student info</p>
           </div>
         </div>
         <div class="progress-item">
-          <div class="progress-label">Chapters Completed 1/6</div>
+          <div class="progress-label">Chapters Completed</div>
           <div class="progress-bar">
             <div class="progress-fill"></div>
           </div>
-          <div class="progress-percentage">16%</div>
+          <div class="progress-percentage">0%</div>
         </div>
       </div>
 
       <!-- Student List -->
       <div class="student-list">
         <div class="student-list-header">Student List</div>
-        <div class="student-list-item">
-          <div class="student-list-avatar"></div>
-          <div class="student-list-info">
-            <h4>Jane Doe</h4>
-            <p>Beginner: Last Login Today</p>
-          </div>
-        </div>
-        <div class="student-list-item">
-          <div class="student-list-avatar"></div>
-          <div class="student-list-info">
-            <h4>John Dope</h4>
-            <p>Beginner: Last Login Yesterday</p>
-          </div>
-        </div>
-        <div class="student-list-item">
-          <div class="student-list-avatar"></div>
-          <div class="student-list-info">
-            <h4>Jane Doe</h4>
-            <p>Beginner: Last Login Today</p>
-          </div>
-        </div>
-        <div class="student-list-item">
-          <div class="student-list-avatar"></div>
-          <div class="student-list-info">
-            <h4>John Dope</h4>
-            <p>Beginner: Last Login Yesterday</p>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -445,11 +417,11 @@
         <div class="playtime-section">
           <div class="playtime-item">
             <span class="playtime-label">Reading Streak:</span>
-            <br>7 Days Active
+            <br>0 Days Active
           </div>
           <div class="playtime-item">
             <span class="playtime-label">Last Active:</span>
-            <br>8 Hours Ago
+            <br>Never
           </div>
         </div>
       </div>
@@ -461,23 +433,23 @@
           <div class="challenge-bar">
             <div class="bar-label">Text Extract</div>
             <div class="bar-chart">
-              <div class="bar-fill" style="background: #ec4899; width: 100%;"></div>
+              <div class="bar-fill" style="background: #ec4899; width: 0%;"></div>
             </div>
-            <div class="bar-value">100</div>
+            <div class="bar-value">0</div>
           </div>
           <div class="challenge-bar">
             <div class="bar-label">Two Truths</div>
             <div class="bar-chart">
-              <div class="bar-fill" style="background: #eab308; width: 60%;"></div>
+              <div class="bar-fill" style="background: #eab308; width: 0%;"></div>
             </div>
-            <div class="bar-value">60</div>
+            <div class="bar-value">0</div>
           </div>
           <div class="challenge-bar">
             <div class="bar-label">Statement Scrutinize</div>
             <div class="bar-chart">
-              <div class="bar-fill" style="background: #10b981; width: 75%;"></div>
+              <div class="bar-fill" style="background: #10b981; width: 0%;"></div>
             </div>
-            <div class="bar-value">75</div>
+            <div class="bar-value">0</div>
           </div>
         </div>
       </div>
@@ -485,7 +457,7 @@
       <!-- Row 1-2: Engagement Card (spans 2 rows) -->
       <div class="card card-engagement">
         <div class="card-header">Engagement</div>
-        <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Month's Daily Login</p>
+        <p style="font-size: 12px; color: #666; margin-bottom: 12px;">Last 30 Days Daily Login</p>
         <div class="engagement-chart">
           <canvas id="engagement-chart"></canvas>
         </div>
@@ -495,7 +467,7 @@
       <div class="card">
         <div class="card-header">Challenge Performance</div>
         <div class="challenge-performance">
-          <div class="performance-score">XXXX PTS.</div>
+          <div class="performance-score">0 PTS.</div>
           <div class="performance-subtitle">Student's Average Challenge<br>Score</div>
         </div>
       </div>
@@ -504,14 +476,7 @@
       <div class="card">
         <div class="card-header">Achievements</div>
         <div class="achievements-grid">
-          <div class="achievement-badge">🎮</div>
-          <div class="achievement-badge">🛡️</div>
-          <div class="achievement-badge">⭐</div>
-          <div class="achievement-badge">🏆</div>
-          <div class="achievement-badge">🎮</div>
-          <div class="achievement-badge">🛡️</div>
-          <div class="achievement-badge">⭐</div>
-          <div class="achievement-badge">🏆</div>
+          <!-- Achievements will be populated here -->
         </div>
       </div>
 
@@ -541,180 +506,6 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // Engagement Chart
-      const engagementCtx = document.getElementById('engagement-chart').getContext('2d');
-      new Chart(engagementCtx, {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-          datasets: [{
-            label: 'Daily Login',
-            data: [10, 20, 15, 25, 18],
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: '#10b981'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 30,
-              ticks: {
-                font: { size: 10 }
-              }
-            },
-            x: {
-              ticks: {
-                font: { size: 10 }
-              }
-            }
-          }
-        }
-      });
-
-      // Text Extract Chart
-      const textExtractCtx = document.getElementById('text-extract-chart').getContext('2d');
-      new Chart(textExtractCtx, {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-          datasets: [{
-            label: 'Score',
-            data: [30, 50, 40, 70, 60],
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointBackgroundColor: '#3b82f6'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 80,
-              ticks: {
-                font: { size: 10 }
-              }
-            },
-            x: {
-              ticks: {
-                font: { size: 10 }
-              }
-            }
-          }
-        }
-      });
-
-      // Two Truths Chart
-      const twoTruthsCtx = document.getElementById('two-truths-chart').getContext('2d');
-      new Chart(twoTruthsCtx, {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-          datasets: [{
-            label: 'Score',
-            data: [30, 50, 40, 70, 60],
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointBackgroundColor: '#3b82f6'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 80,
-              ticks: {
-                font: { size: 10 }
-              }
-            },
-            x: {
-              ticks: {
-                font: { size: 10 }
-              }
-            }
-          }
-        }
-      });
-
-      // Statement Scrutinize Chart
-      const statementCtx = document.getElementById('statement-scrutinize-chart').getContext('2d');
-      new Chart(statementCtx, {
-        type: 'line',
-        data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-          datasets: [{
-            label: 'Score',
-            data: [30, 50, 40, 70, 60],
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointBackgroundColor: '#3b82f6'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 80,
-              ticks: {
-                font: { size: 10 }
-              }
-            },
-            x: {
-              ticks: {
-                font: { size: 10 }
-              }
-            }
-          }
-        }
-      });
-    });
-  </script>
+  <script src="js/mp_progress_detail.js"></script>
 </body>
 </html>
