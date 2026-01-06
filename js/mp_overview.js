@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Store chart instances globally to destroy them before creating new ones
   let engagementChart = null;
-  let challengeChart = null;
 
   // Fetch dashboard overview data (optionally filtered by gradeLevel)
   async function fetchDashboardData(gradeLevel = null) {
@@ -96,52 +95,50 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    // ---- CHALLENGE CHART ----
-    const challengeCtx = document.getElementById("challengeChart");
-    if (challengeCtx) {
-      // Destroy existing chart if it exists
-      if (challengeChart) {
-        challengeChart.destroy();
-      }
-      
-      challengeChart = new Chart(challengeCtx, {
-        type: "bar",
-        data: {
-          labels: data.weeklyChallengeAttempts.labels || [],
-          datasets: [{
-            label: "Weekly Attempts",
-            data: data.weeklyChallengeAttempts.data || [],
-            backgroundColor: ["#e879f9", "#fbbf24", "#10b981"],
-            borderRadius: 8,
-            borderSkipped: false
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          indexAxis: "x",
-          plugins: {
-            legend: {
-              display: true,
-              position: 'top'
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: "#f0f0f0"
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });
+    // ---- TOTAL CHALLENGE ATTEMPTS ----
+    // Update the three attempt bars (Text Extract, Two Truths, Statement Scrutinize)
+    updateChallengeAttempts(data);
+  }
+
+  function updateChallengeAttempts(data) {
+    // Try to get from totalChallengeAttempts first, fallback to weeklyChallengeAttempts array
+    let text = 0, two = 0, stmt = 0;
+
+    if (data.totalChallengeAttempts && typeof data.totalChallengeAttempts === 'object') {
+      text = data.totalChallengeAttempts.textExtract ?? 0;
+      two = data.totalChallengeAttempts.twoTruths ?? 0;
+      stmt = data.totalChallengeAttempts.statementScrutinize ?? 0;
+    } else if (data.weeklyChallengeAttempts && Array.isArray(data.weeklyChallengeAttempts.data)) {
+      // Fallback: use weekly data if available
+      const weeklyData = data.weeklyChallengeAttempts.data;
+      text = weeklyData[0] ?? 0;
+      two = weeklyData[1] ?? 0;
+      stmt = weeklyData[2] ?? 0;
     }
+
+    text = Number(text);
+    two = Number(two);
+    stmt = Number(stmt);
+
+    console.log('Challenge attempts to display:', { text, two, stmt });
+
+    // Update DOM values
+    const textValEl = document.getElementById('overview-text-value');
+    const twoValEl = document.getElementById('overview-two-value');
+    const stmtValEl = document.getElementById('overview-stmt-value');
+    const textFill = document.getElementById('overview-text-fill');
+    const twoFill = document.getElementById('overview-two-fill');
+    const stmtFill = document.getElementById('overview-stmt-fill');
+
+    if (textValEl) textValEl.textContent = text;
+    if (twoValEl) twoValEl.textContent = two;
+    if (stmtValEl) stmtValEl.textContent = stmt;
+
+    // Scale widths relative to the largest value so bars show proportions
+    const max = Math.max(text, two, stmt, 1);
+    if (textFill) textFill.style.width = Math.round((text / max) * 100) + '%';
+    if (twoFill) twoFill.style.width = Math.round((two / max) * 100) + '%';
+    if (stmtFill) stmtFill.style.width = Math.round((stmt / max) * 100) + '%';
   }
 
   function updateProgressBars(data) {
@@ -178,6 +175,11 @@ document.addEventListener("DOMContentLoaded", function () {
       weeklyChallengeAttempts: {
         labels: ["Text Extract", "Two Truths", "Statement Scrutinize"],
         data: [100, 60, 75]
+      },
+      totalChallengeAttempts: {
+        textExtract: 1000,
+        twoTruths: 600,
+        statementScrutinize: 750
       }
     };
 
