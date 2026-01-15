@@ -426,7 +426,7 @@
     <h1>Student Progress</h1>
     <div style="display: flex; gap: 10px;">
       <button id="export-pdf-btn" onclick="exportToPDF()">📥 Export to PDF</button>
-      <button id="back-button" onclick="if(window.parent !== window) { window.parent.document.getElementById('page-progress').src = 'mp_progress.html'; } else { window.history.back(); }">← Back to Progress</button>
+      <button id="back-button" onclick="try { if(window.parent !== window) { const iframe = window.parent.document.getElementById('page-progress'); if(iframe) { iframe.src = 'mp_progress_section.html'; } else { window.location.href = 'mp_progress_section.html'; } } else { window.location.href = 'mp_progress_section.html'; } } catch(e) { window.location.href = 'mp_progress_section.html'; }">← Back to Sections</button>
     </div>
   </div>
 

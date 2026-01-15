@@ -9,11 +9,45 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  // Get grade level from sessionStorage
+  const selectedGrade = sessionStorage.getItem('selectedGrade');
+  if (!selectedGrade) {
+    console.error('No grade level selected.');
+    document.body.innerHTML = '<p style="color: red; padding: 20px;">Error: No grade level selected. Please go back to Progress.</p>';
+    return;
+  }
+
   // Store chart instances to destroy them before creating new ones
   const chartInstances = {};
-
+  
   // DOM Elements
   const gridContainer = document.getElementById('gridContainer');
+  const pageTitle = document.getElementById('pageTitle');
+  const backBtn = document.getElementById('backBtn');
+
+  // Update page title
+  pageTitle.textContent = `Grade ${selectedGrade} - Sections`;
+
+  // Back button handler
+  backBtn.addEventListener('click', function() {
+    // Clear the grade selection to show grades view
+    sessionStorage.removeItem('selectedGrade');
+    try {
+      if (window.parent !== window) {
+        const iframeElement = window.parent.document.getElementById('page-progress');
+        if (iframeElement) {
+          iframeElement.src = 'mp_progress.html';
+        } else {
+          window.location.href = 'mp_progress.html';
+        }
+      } else {
+        window.location.href = 'mp_progress.html';
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      window.location.href = 'mp_progress.html';
+    }
+  });
 
   // Fetch progress data from backend
   async function fetchProgressData() {
@@ -32,55 +66,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const data = await response.json();
       console.log('Progress data retrieved:', data);
-      displayGradeView(data);
+      
+      // Filter sections for the selected grade
+      const sectionsData = data.filter(c => c.gradeLevel === parseInt(selectedGrade));
+      if (sectionsData.length > 0) {
+        displaySectionView(sectionsData);
+      } else {
+        gridContainer.innerHTML = '<p style="color: #999; padding: 20px;">No sections found for this grade level.</p>';
+      }
     } catch (error) {
       console.error('Error fetching progress data:', error);
       displaySampleData();
     }
   }
 
-  // Display grade level summary view
-  function displayGradeView(classesData) {
+  // Display section view for selected grade
+  function displaySectionView(sectionsData) {
     if (!gridContainer) return;
-
-    // Group data by grade level and calculate summaries
-    const gradeMap = {};
-    classesData.forEach(classData => {
-      if (!gradeMap[classData.gradeLevel]) {
-        gradeMap[classData.gradeLevel] = [];
-      }
-      gradeMap[classData.gradeLevel].push(classData);
-    });
 
     gridContainer.innerHTML = '';
 
-    // Create card for each grade
-    Object.keys(gradeMap).sort((a, b) => a - b).forEach((gradeLevel, index) => {
-      const sectionsList = gradeMap[gradeLevel];
+    sectionsData.forEach((classData, index) => {
       const cardIndex = index + 1;
-
-      // Calculate grade-level averages
-      const avgChapters = (sectionsList.reduce((sum, s) => sum + s.avgChapters, 0) / sectionsList.length);
-      const avgAccuracy = (sectionsList.reduce((sum, s) => sum + s.avgAccuracy, 0) / sectionsList.length);
-      const avgActivityData = [];
-      if (sectionsList[0] && sectionsList[0].activityLabels) {
-        sectionsList[0].activityLabels.forEach((_, dayIdx) => {
-          const daySum = sectionsList.reduce((sum, s) => sum + (s.activityData[dayIdx] || 0), 0);
-          avgActivityData.push(Math.round(daySum / sectionsList.length));
-        });
-      }
-
+      
       const card = document.createElement('div');
       card.className = 'progress-card';
       card.innerHTML = `
-        <div class="progress-card-header">Grade ${gradeLevel}</div>
+        <div class="progress-card-header">Section ${classData.section}</div>
         <div class="card-content">
           <div class="progress-section">
-            <div class="progress-info">Average Chapters Completed ${avgChapters.toFixed(1)}/6</div>
+            <div class="progress-info">Average Chapters Completed ${classData.avgChapters}/6</div>
             <div class="progress-bar">
-              <div class="progress-fill" style="width: ${(avgChapters / 6) * 100}%;"></div>
+              <div class="progress-fill" style="width: ${(classData.avgChapters / 6) * 100}%;"></div>
             </div>
-            <div class="progress-percentage">${Math.round((avgChapters / 6) * 100)}%</div>
+            <div class="progress-percentage">${Math.round((classData.avgChapters / 6) * 100)}%</div>
           </div>
           <div class="charts-section">
             <div class="left-section">
@@ -101,25 +120,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
       gridContainer.appendChild(card);
 
-      // Add click handler to navigate to sections view
-      card.style.cursor = 'pointer';
+      // Add click handler to navigate to student detail page
       card.addEventListener('click', function() {
-        sessionStorage.setItem('selectedGrade', gradeLevel);
+        // Store section and grade level for detail page
+        sessionStorage.setItem('selectedGrade', selectedGrade);
+        sessionStorage.setItem('selectedSection', classData.section);
         
         try {
           if (window.parent !== window) {
             const iframeElement = window.parent.document.getElementById('page-progress');
             if (iframeElement) {
-              iframeElement.src = 'mp_progress_section.html';
+              iframeElement.src = 'mp_progress_detail.html';
             } else {
-              window.location.href = 'mp_progress_section.html';
+              window.location.href = 'mp_progress_detail.html';
             }
           } else {
-            window.location.href = 'mp_progress_section.html';
+            window.location.href = 'mp_progress_detail.html';
           }
         } catch (error) {
           console.error('Navigation error:', error);
-          window.location.href = 'mp_progress_section.html';
+          window.location.href = 'mp_progress_detail.html';
         }
       });
 
@@ -134,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
           type: "doughnut",
           data: {
             datasets: [{
-              data: [avgAccuracy, 100 - avgAccuracy],
+              data: [classData.avgAccuracy, 100 - classData.avgAccuracy],
               backgroundColor: ["#d0f9d0", "#f0f0f0"],
               borderColor: ["#10b981", "#e5e5e5"],
               borderWidth: 2
@@ -157,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
               ctx.font = `bold ${fontSize}em sans-serif`;
               ctx.textBaseline = "middle";
               ctx.fillStyle = "#10b981";
-              const text = `${Math.round(avgAccuracy)}%`;
+              const text = `${classData.avgAccuracy}%`;
               const textX = Math.round((width - ctx.measureText(text).width) / 2);
               const textY = height / 2;
               ctx.fillText(text, textX, textY);
@@ -177,12 +197,12 @@ document.addEventListener("DOMContentLoaded", function () {
         chartInstances[`activity-${cardIndex}`] = new Chart(activityCtx, {
           type: "bar",
           data: {
-            labels: sectionsList[0]?.activityLabels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            labels: classData.activityLabels,
             datasets: [{
               label: "Activity",
-              data: avgActivityData,
-              backgroundColor: avgActivityData.map((_, idx) => 
-                idx === (sectionsList[0]?.currentDayIndex || 6) ? "#3b82f6" : "#10b981"
+              data: classData.activityData,
+              backgroundColor: classData.activityLabels.map((label, idx) => 
+                idx === classData.currentDayIndex ? "#3b82f6" : "#10b981"
               ),
               borderRadius: 3,
               barThickness: 10,
@@ -270,7 +290,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     ];
 
-    displayGradeView(sampleData);
+    const filteredData = sampleData.filter(c => c.gradeLevel === parseInt(selectedGrade));
+    if (filteredData.length > 0) {
+      displaySectionView(filteredData);
+    } else {
+      gridContainer.innerHTML = '<p style="color: #999; padding: 20px;">No sections found for this grade level.</p>';
+    }
   }
 
   // Fetch data on page load

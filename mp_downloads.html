@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Download Reports</title>
+  
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- html2pdf CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      padding: 20px;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 32px;
+      font-weight: 600;
+      color: #000;
+    }
+
+    .downloads-container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
+      max-width: 1200px;
+    }
+
+    .download-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 30px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .download-card h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .download-card p {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .card-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    select {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+      transition: border 0.2s;
+    }
+
+    select:hover {
+      border-color: #10b981;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #059669;
+    }
+
+    .btn-primary:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #333;
+      border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .icon {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .status-message {
+      font-size: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .status-message.success {
+      background: #dcfce7;
+      color: #166534;
+      display: block;
+    }
+
+    .status-message.error {
+      background: #fee2e2;
+      color: #991b1b;
+      display: block;
+    }
+
+    .status-message.loading {
+      background: #dbeafe;
+      color: #1e40af;
+      display: block;
+    }
+
+    @media (max-width: 1024px) {
+      .downloads-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>📥 Download Reports</h1>
+
+  <div class="downloads-container">
+    
+    <!-- Report 1: All Grades and Sections Summary -->
+    <div class="download-card">
+      <div class="icon">📊</div>
+      <h2>Overall Summary Report</h2>
+      <p>Download a comprehensive PDF report with summaries for all grade levels and sections.</p>
+      
+      <div class="card-content">
+        <p style="font-size: 12px; color: #999; margin: 0;">This report includes:</p>
+        <ul style="font-size: 12px; color: #666; margin: 0 0 0 20px; line-height: 1.8;">
+          <li>Grade level overview</li>
+          <li>Section statistics</li>
+          <li>Average chapter progress</li>
+          <li>Quiz accuracy metrics</li>
+          <li>Student engagement data</li>
+        </ul>
+      </div>
+
+      <div class="status-message" id="status-report1"></div>
+      
+      <button class="btn-primary" onclick="downloadOverallReport()">
+        📥 Download Overall Report
+      </button>
+    </div>
+
+    <!-- Report 2: Section Students Summary -->
+    <div class="download-card">
+      <div class="icon">👥</div>
+      <h2>Section Students Report</h2>
+      <p>Download a PDF report with detailed summaries for all students in a selected section.</p>
+      
+      <div class="card-content">
+        <div class="form-group">
+          <label for="gradeSelect">Select Grade Level:</label>
+          <select id="gradeSelect" onchange="updateSections()">
+            <option value="">-- Choose Grade --</option>
+            <option value="4">Grade 4</option>
+            <option value="5">Grade 5</option>
+            <option value="6">Grade 6</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sectionSelect">Select Section:</label>
+          <select id="sectionSelect" disabled>
+            <option value="">-- Select a grade first --</option>
+          </select>
+        </div>
+
+        <p style="font-size: 12px; color: #999; margin: 0;">This report includes:</p>
+        <ul style="font-size: 12px; color: #666; margin: 0 0 0 20px; line-height: 1.8;">
+          <li>Student names and IDs</li>
+          <li>Individual progress metrics</li>
+          <li>Challenge attempt counts</li>
+          <li>Performance scores</li>
+          <li>Engagement details</li>
+        </ul>
+      </div>
+
+      <div class="status-message" id="status-report2"></div>
+      
+      <button class="btn-primary" id="downloadBtn2" onclick="downloadSectionReport()" disabled>
+        📥 Download Section Report
+      </button>
+    </div>
+
+  </div>
+
+  <script src="js/mp_downloads.js"></script>
+</body>
+</html>
