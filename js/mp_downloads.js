@@ -135,14 +135,14 @@ document.addEventListener("DOMContentLoaded", function () {
       // Summary stats for overall report
       const totalStudents = progressData.reduce((sum, item) => sum + (item.studentCount || 0), 0);
       const totalSections = progressData.length;
-      const avgChaptersOverall = (progressData.reduce((sum, item) => sum + (item.avgChapters || 0), 0) / totalSections).toFixed(1);
+      const avgStoryLevelOverall = Math.round(progressData.reduce((sum, item) => sum + (item.avgStoryLevel || 0), 0) / totalSections);
       const avgAccuracyOverall = Math.round(progressData.reduce((sum, item) => sum + (item.avgAccuracy || 0), 0) / totalSections);
 
       const overallStats = [
         { label: 'Total Grades', value: `${Object.keys(gradeMap).length}` },
         { label: 'Total Sections', value: `${totalSections}` },
         { label: 'Total Students', value: `${totalStudents}` },
-        { label: 'Avg. Chapters', value: `${avgChaptersOverall}/6` },
+        { label: 'Avg. Story Level', value: `${avgStoryLevelOverall}/75` },
         { label: 'Avg. Accuracy', value: `${avgAccuracyOverall}%` }
       ];
 
@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const sections = gradeMap[grade];
-        const gradeAvgChapters = (sections.reduce((sum, s) => sum + s.avgChapters, 0) / sections.length).toFixed(1);
+        const gradeAvgStoryLevel = Math.round(sections.reduce((sum, s) => sum + s.avgStoryLevel, 0) / sections.length);
         const gradeAvgAccuracy = Math.round(sections.reduce((sum, s) => sum + s.avgAccuracy, 0) / sections.length);
 
         // Grade header
@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Grade stats
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        const statsText = `Avg Chapters: ${gradeAvgChapters}/6  |  Avg Accuracy: ${gradeAvgAccuracy}%  |  Total Sections: ${sections.length}`;
+        const statsText = `Avg Story Level: ${gradeAvgStoryLevel}/75  |  Avg Accuracy: ${gradeAvgAccuracy}%  |  Total Sections: ${sections.length}`;
         doc.text(statsText, margin, yPosition);
         yPosition += 8;
 
@@ -205,12 +205,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const tableData = sections.map(s => [
           s.section,
           s.studentCount,
-          `${s.avgChapters}/6`,
+          `${s.avgStoryLevel}/75`,
           `${s.avgAccuracy}%`
         ]);
 
         doc.autoTable({
-          head: [['Section', 'Students', 'Chapters', 'Accuracy']],
+          head: [['Section', 'Students', 'Story Level', 'Accuracy']],
           body: tableData,
           startY: yPosition,
           margin: { left: margin, right: margin },
@@ -452,8 +452,8 @@ document.addEventListener("DOMContentLoaded", function () {
           <h3>Grade ${grade}</h3>
           <div class="grade-stats">
             <div class="stat-item">
-              <span class="stat-label">Average Chapters:</span>
-              <span class="stat-value">${gradeAvgChapters}/6</span>
+              <span class="stat-label">Average Story Level:</span>
+              <span class="stat-value">${gradeAvgStoryLevel}/75</span>
             </div>
             <div class="stat-item">
               <span class="stat-label">Average Accuracy:</span>
@@ -470,7 +470,7 @@ document.addEventListener("DOMContentLoaded", function () {
               <tr>
                 <th>Section</th>
                 <th>Students</th>
-                <th>Chapters</th>
+                <th>Story Level</th>
                 <th>Accuracy</th>
               </tr>
             </thead>
@@ -479,7 +479,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <tr>
                   <td>${s.section}</td>
                   <td>${s.studentCount}</td>
-                  <td>${s.avgChapters}/6</td>
+                  <td>${s.avgStoryLevel}/75</td>
                   <td>${s.avgAccuracy}%</td>
                 </tr>
               `).join('')}

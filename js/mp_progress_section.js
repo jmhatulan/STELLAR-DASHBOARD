@@ -95,11 +95,11 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="progress-card-header">Section ${classData.section}</div>
         <div class="card-content">
           <div class="progress-section">
-            <div class="progress-info">Average Chapters Completed ${classData.avgChapters}/6</div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${(classData.avgChapters / 6) * 100}%;"></div>
-            </div>
-            <div class="progress-percentage">${Math.round((classData.avgChapters / 6) * 100)}%</div>
+            <div class="progress-info">Average Story Level ${classData.avgStoryLevel}/75</div>
+              <div class="progress-bar">
+              <div class="progress-fill" style="width: ${(classData.avgStoryLevel / 75) * 100}%;"></div>
+              </div>
+            <div class="progress-percentage">${Math.round((classData.avgStoryLevel / 75) * 100)}%</div>
           </div>
           <div class="charts-section">
             <div class="left-section">
