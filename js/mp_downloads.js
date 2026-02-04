@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const gradeSelect = document.getElementById('gradeSelect');
     const sectionSelect = document.getElementById('sectionSelect');
     const downloadBtn = document.getElementById('downloadBtn2');
+    const downloadBtnCSV = document.getElementById('downloadBtn2CSV');
     
     const selectedGrade = gradeSelect.value;
 
@@ -58,6 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
       sectionSelect.innerHTML = '<option value="">-- Select a grade first --</option>';
       sectionSelect.disabled = true;
       downloadBtn.disabled = true;
+      downloadBtnCSV.disabled = true;
       return;
     }
 
@@ -74,10 +76,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     sectionSelect.disabled = false;
     downloadBtn.disabled = sections.length === 0;
+    downloadBtnCSV.disabled = sections.length === 0;
 
-    // Enable download button when section is selected
+    // Enable download buttons when section is selected
     sectionSelect.onchange = function() {
       downloadBtn.disabled = !this.value;
+      downloadBtnCSV.disabled = !this.value;
     };
   };
 
@@ -91,22 +95,153 @@ document.addEventListener("DOMContentLoaded", function () {
         throw new Error('No data available');
       }
 
-      // Generate HTML report
-      const reportHTML = generateOverallReportHTML(progressData);
+      // Group by grade level
+      const gradeMap = {};
+      progressData.forEach(item => {
+        if (!gradeMap[item.gradeLevel]) {
+          gradeMap[item.gradeLevel] = [];
+        }
+        gradeMap[item.gradeLevel].push(item);
+      });
 
       // Create PDF
-      const opt = {
-        margin: 10,
-        filename: `STELLAR_Overall_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-      };
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-      html2pdf().set(opt).from(reportHTML).save();
+      let yPosition = 20;
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+
+      // Header
+      doc.setFontSize(18);
+      doc.setTextColor(63, 81, 181);
+      doc.text('STELLAR Dashboard Report', margin, yPosition);
+      
+      doc.setFontSize(11);
+      doc.setTextColor(120, 120, 120);
+      doc.text('Overall Summary - All Grades and Sections', margin, yPosition + 8);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, margin, yPosition + 14);
+      
+      yPosition += 25;
+      doc.setDrawColor(63, 81, 181);
+      doc.line(margin, yPosition - 3, margin + contentWidth, yPosition - 3);
+      yPosition += 10;
+
+      // Summary stats for overall report
+      const totalStudents = progressData.reduce((sum, item) => sum + (item.studentCount || 0), 0);
+      const totalSections = progressData.length;
+      const avgChaptersOverall = (progressData.reduce((sum, item) => sum + (item.avgChapters || 0), 0) / totalSections).toFixed(1);
+      const avgAccuracyOverall = Math.round(progressData.reduce((sum, item) => sum + (item.avgAccuracy || 0), 0) / totalSections);
+
+      const overallStats = [
+        { label: 'Total Grades', value: `${Object.keys(gradeMap).length}` },
+        { label: 'Total Sections', value: `${totalSections}` },
+        { label: 'Total Students', value: `${totalStudents}` },
+        { label: 'Avg. Chapters', value: `${avgChaptersOverall}/6` },
+        { label: 'Avg. Accuracy', value: `${avgAccuracyOverall}%` }
+      ];
+
+      const statCardWidth = (contentWidth - 16) / 5;
+      const statCardHeight = 20;
+
+      overallStats.forEach((stat, index) => {
+        const cardX = margin + index * (statCardWidth + 4);
+        
+        // Card background (soft blue-gray)
+        doc.setFillColor(245, 247, 255);
+        doc.rect(cardX, yPosition, statCardWidth, statCardHeight, 'F');
+        
+        // Left border (indigo)
+        doc.setDrawColor(63, 81, 181);
+        doc.setLineWidth(1.5);
+        doc.line(cardX, yPosition, cardX, yPosition + statCardHeight);
+        
+        // Label
+        doc.setFontSize(8);
+        doc.setTextColor(110, 110, 110);
+        doc.text(stat.label, cardX + 2, yPosition + 5);
+        
+        // Value
+        doc.setFontSize(15);
+        doc.setTextColor(63, 81, 181);
+        doc.setFont(undefined, 'bold');
+        doc.text(stat.value, cardX + 2, yPosition + 14);
+        
+        // Reset font
+        doc.setFont(undefined, 'normal');
+      });
+
+      yPosition += statCardHeight + 10;
+      Object.keys(gradeMap).sort((a, b) => a - b).forEach(grade => {
+        // Check if we need a new page
+        if (yPosition > pageHeight - 50) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        const sections = gradeMap[grade];
+        const gradeAvgChapters = (sections.reduce((sum, s) => sum + s.avgChapters, 0) / sections.length).toFixed(1);
+        const gradeAvgAccuracy = Math.round(sections.reduce((sum, s) => sum + s.avgAccuracy, 0) / sections.length);
+
+        // Grade header
+        doc.setFontSize(13);
+        doc.setTextColor(63, 81, 181);
+        doc.text(`Grade ${grade}`, margin, yPosition);
+        yPosition += 8;
+
+        // Grade stats
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        const statsText = `Avg Chapters: ${gradeAvgChapters}/6  |  Avg Accuracy: ${gradeAvgAccuracy}%  |  Total Sections: ${sections.length}`;
+        doc.text(statsText, margin, yPosition);
+        yPosition += 8;
+
+        // Table data
+        const tableData = sections.map(s => [
+          s.section,
+          s.studentCount,
+          `${s.avgChapters}/6`,
+          `${s.avgAccuracy}%`
+        ]);
+
+        doc.autoTable({
+          head: [['Section', 'Students', 'Chapters', 'Accuracy']],
+          body: tableData,
+          startY: yPosition,
+          margin: { left: margin, right: margin },
+          styles: {
+            fontSize: 9,
+            cellPadding: 4,
+            textColor: [50, 50, 50],
+            lineColor: [255, 255, 255]
+          },
+          headStyles: {
+            backgroundColor: [63, 81, 181],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            cellPadding: 5
+          },
+          alternateRowStyles: {
+            backgroundColor: [250, 250, 250]
+          }
+        });
+
+        yPosition = doc.autoTable.previous.finalY + 12;
+      });
+
+      // Footer
+      doc.setFontSize(9);
+      doc.setTextColor(150);
+      doc.text('This report contains aggregated data for all grade levels and sections.', margin, pageHeight - 15);
+
+      doc.save(`STELLAR_Overall_Report_${new Date().toISOString().split('T')[0]}.pdf`);
       showStatus('status-report1', '✓ Report downloaded successfully!', 'success');
       
-      // Clear message after 3 seconds
       setTimeout(() => {
         statusEl.style.display = 'none';
       }, 3000);
@@ -150,22 +285,141 @@ document.addEventListener("DOMContentLoaded", function () {
       const students = await studentsResponse.json();
       console.log('Students fetched:', students);
 
-      // Generate HTML report
-      const reportHTML = generateSectionReportHTML(gradeLevel, section, students);
+      // Calculate section averages
+      let totalTextExtract = 0;
+      let totalTwoTruths = 0;
+      let totalStatementScrutinize = 0;
+      let studentCountWithScores = 0;
+
+      students.forEach(student => {
+        const textExtract = student.gameScores?.textExtract || 0;
+        const twoTruths = student.gameScores?.twoTruths || 0;
+        const statementScrutinize = student.gameScores?.statementScrutinize || 0;
+
+        totalTextExtract += textExtract;
+        totalTwoTruths += twoTruths;
+        totalStatementScrutinize += statementScrutinize;
+        if (textExtract > 0 || twoTruths > 0 || statementScrutinize > 0) {
+          studentCountWithScores++;
+        }
+      });
+
+      const avgTextExtract = studentCountWithScores > 0 ? Math.round(totalTextExtract / studentCountWithScores) : 0;
+      const avgTwoTruths = studentCountWithScores > 0 ? Math.round(totalTwoTruths / studentCountWithScores) : 0;
+      const avgStatementScrutinize = studentCountWithScores > 0 ? Math.round(totalStatementScrutinize / studentCountWithScores) : 0;
+      const totalProgress = students.length > 0 ? Math.round(students.reduce((sum, s) => sum + s.storyProgress, 0) / students.length) : 0;
+      const avgExp = students.length > 0 ? Math.round(students.reduce((sum, s) => sum + s.experiencePoints, 0) / students.length) : 0;
 
       // Create PDF
-      const opt = {
-        margin: 10,
-        filename: `STELLAR_Grade${gradeLevel}_Section${section}_Report_${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-      };
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-      html2pdf().set(opt).from(reportHTML).save();
+      let yPosition = 20;
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+
+      // Header
+      doc.setFontSize(18);
+      doc.setTextColor(63, 81, 181);
+      doc.text('STELLAR Dashboard Report', margin, yPosition);
+      
+      doc.setFontSize(11);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Grade ${gradeLevel} - Section ${section} Student Summary`, margin, yPosition + 8);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, margin, yPosition + 14);
+      
+      yPosition += 25;
+      doc.setDrawColor(63, 81, 181);
+      doc.line(margin, yPosition - 3, margin + contentWidth, yPosition - 3);
+      yPosition += 10;
+
+      // Summary stats grid - beautiful card style
+      const statCardWidth = (contentWidth - 16) / 5; // 5 cards with gaps
+      const statCardHeight = 22;
+      const stats = [
+        { label: 'Total Students', value: `${students.length}` },
+        { label: 'Avg. Story Progress', value: `${totalProgress}/75` },
+        { label: 'Avg. Experience', value: `${avgExp}` },
+        { label: 'Text Extract Avg.', value: `${avgTextExtract}` },
+        { label: 'Two Truths Avg.', value: `${avgTwoTruths}` }
+      ];
+
+      stats.forEach((stat, index) => {
+        const cardX = margin + index * (statCardWidth + 4);
+        
+        // Card background (soft blue-gray)
+        doc.setFillColor(245, 247, 255);
+        doc.rect(cardX, yPosition, statCardWidth, statCardHeight, 'F');
+        
+        // Left border (indigo)
+        doc.setDrawColor(63, 81, 181);
+        doc.setLineWidth(1.5);
+        doc.line(cardX, yPosition, cardX, yPosition + statCardHeight);
+        
+        // Label
+        doc.setFontSize(8);
+        doc.setTextColor(110, 110, 110);
+        doc.text(stat.label, cardX + 2, yPosition + 5);
+        
+        // Value
+        doc.setFontSize(15);
+        doc.setTextColor(63, 81, 181);
+        doc.setFont(undefined, 'bold');
+        doc.text(stat.value, cardX + 2, yPosition + 14);
+        
+        // Reset font
+        doc.setFont(undefined, 'normal');
+      });
+
+      yPosition += statCardHeight + 10;
+
+      // Students table
+      const tableData = students.map((student, index) => [
+        index + 1,
+        student.name,
+        student.storyProgress || 0,
+        student.experiencePoints || 0,
+        student.gameScores?.textExtract || 0,
+        student.gameScores?.twoTruths || 0,
+        student.gameScores?.statementScrutinize || 0,
+        student.lastLogin ? new Date(student.lastLogin).toLocaleDateString() : 'Never'
+      ]);
+
+      doc.autoTable({
+        head: [['#', 'Name', 'Story', 'Exp', 'Extract', 'Truths', 'Scrutinize', 'Last Login']],
+        body: tableData,
+        startY: yPosition,
+        margin: { left: margin, right: margin },
+        styles: {
+          fontSize: 8,
+          cellPadding: 3,
+          textColor: [50, 50, 50],
+          lineColor: [255, 255, 255]
+        },
+        headStyles: {
+          backgroundColor: [63, 81, 181],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          cellPadding: 4
+        },
+        alternateRowStyles: {
+          backgroundColor: [250, 250, 250]
+        }
+      });
+
+      // Footer
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`This report contains detailed information for all students in Grade ${gradeLevel} Section ${section}.`, margin, pageHeight - 15);
+
+      doc.save(`STELLAR_Grade${gradeLevel}_Section${section}_Report_${new Date().toISOString().split('T')[0]}.pdf`);
       showStatus('status-report2', '✓ Report downloaded successfully!', 'success');
       
-      // Clear message after 3 seconds
       setTimeout(() => {
         statusEl.style.display = 'none';
       }, 3000);
@@ -241,72 +495,78 @@ document.addEventListener("DOMContentLoaded", function () {
       <head>
         <meta charset="UTF-8">
         <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
           body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
+            width: 100%;
             background: white;
             color: #333;
+            line-height: 1.4;
           }
           .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #10b981;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
             page-break-after: avoid;
           }
           .header h1 {
             margin: 0;
             color: #333;
-            font-size: 28px;
+            font-size: 24px;
+            margin-bottom: 5px;
           }
           .header p {
-            margin: 5px 0 0 0;
+            margin: 2px 0;
             color: #666;
-            font-size: 12px;
+            font-size: 11px;
           }
           .grade-section {
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             page-break-inside: avoid;
           }
           .grade-section h3 {
             background: #f0fdf4;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-left: 4px solid #10b981;
-            margin: 0 0 15px 0;
-            font-size: 16px;
+            margin: 0 0 10px 0;
+            font-size: 14px;
             page-break-after: avoid;
           }
           .grade-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 8px;
+            margin-bottom: 12px;
             page-break-inside: avoid;
           }
           .stat-item {
             background: #f9f9f9;
-            padding: 10px;
+            padding: 8px;
             border-radius: 4px;
             border: 1px solid #eee;
             page-break-inside: avoid;
           }
           .stat-label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
           }
           .stat-value {
             display: block;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #10b981;
           }
           table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            font-size: 10px;
             page-break-inside: auto;
           }
           table thead {
@@ -320,7 +580,7 @@ document.addEventListener("DOMContentLoaded", function () {
           table th {
             background: #f0fdf4;
             border: 1px solid #e0e0e0;
-            padding: 8px;
+            padding: 6px;
             text-align: left;
             font-weight: 600;
             color: #333;
@@ -328,7 +588,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           table td {
             border: 1px solid #e0e0e0;
-            padding: 8px;
+            padding: 5px;
           }
           table tbody tr:nth-child(even) {
             background: #fafafa;
@@ -337,10 +597,10 @@ document.addEventListener("DOMContentLoaded", function () {
             background: white;
           }
           .footer {
-            margin-top: 30px;
-            padding-top: 15px;
+            margin-top: 15px;
+            padding-top: 10px;
             border-top: 1px solid #eee;
-            font-size: 10px;
+            font-size: 9px;
             color: #999;
             text-align: center;
             page-break-before: avoid;
@@ -349,7 +609,7 @@ document.addEventListener("DOMContentLoaded", function () {
       </head>
       <body>
         <div class="header">
-          <h1>🎓 STELLAR Dashboard Report</h1>
+          <h1>STELLAR Dashboard Report</h1>
           <p>Overall Summary - All Grades and Sections</p>
           <p>Generated: ${new Date().toLocaleString()}</p>
         </div>
@@ -423,63 +683,69 @@ document.addEventListener("DOMContentLoaded", function () {
       <head>
         <meta charset="UTF-8">
         <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
           body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
+            width: 100%;
             background: white;
             color: #333;
+            line-height: 1.4;
           }
           .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
             border-bottom: 2px solid #10b981;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
             page-break-after: avoid;
           }
           .header h1 {
             margin: 0;
             color: #333;
-            font-size: 28px;
+            font-size: 24px;
+            margin-bottom: 5px;
           }
           .header p {
-            margin: 5px 0 0 0;
+            margin: 2px 0;
             color: #666;
-            font-size: 12px;
+            font-size: 11px;
           }
           .summary-stats {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 10px;
+            margin-bottom: 15px;
             page-break-after: avoid;
             page-break-inside: avoid;
           }
           .summary-stat {
             background: #f0fdf4;
-            padding: 15px;
-            border-radius: 6px;
+            padding: 10px;
+            border-radius: 4px;
             border-left: 4px solid #10b981;
             page-break-inside: avoid;
           }
           .summary-stat-label {
             display: block;
-            font-size: 11px;
+            font-size: 10px;
             color: #666;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             font-weight: 600;
           }
           .summary-stat-value {
             display: block;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             color: #10b981;
           }
           table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
-            margin-top: 20px;
+            font-size: 9px;
+            margin-top: 10px;
             page-break-inside: auto;
           }
           table thead {
@@ -493,7 +759,7 @@ document.addEventListener("DOMContentLoaded", function () {
           table th {
             background: #f0fdf4;
             border: 1px solid #e0e0e0;
-            padding: 10px;
+            padding: 6px;
             text-align: left;
             font-weight: 600;
             color: #333;
@@ -501,7 +767,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           table td {
             border: 1px solid #e0e0e0;
-            padding: 8px;
+            padding: 5px;
           }
           table tbody tr:nth-child(even) {
             background: #fafafa;
@@ -510,10 +776,10 @@ document.addEventListener("DOMContentLoaded", function () {
             background: white;
           }
           .footer {
-            margin-top: 30px;
-            padding-top: 15px;
+            margin-top: 15px;
+            padding-top: 10px;
             border-top: 1px solid #eee;
-            font-size: 10px;
+            font-size: 9px;
             color: #999;
             text-align: center;
             page-break-before: avoid;
@@ -526,7 +792,7 @@ document.addEventListener("DOMContentLoaded", function () {
       </head>
       <body>
         <div class="header">
-          <h1>🎓 STELLAR Dashboard Report</h1>
+          <h1>STELLAR Dashboard Report</h1>
           <p>Grade ${gradeLevel} - Section ${section} Student Summary</p>
           <p>Generated: ${new Date().toLocaleString()}</p>
         </div>
@@ -579,6 +845,139 @@ document.addEventListener("DOMContentLoaded", function () {
       </body>
       </html>
     `;
+  }
+
+  // Download Overall Report as CSV
+  window.downloadOverallReportCSV = async function() {
+    const statusEl = document.getElementById('status-report1');
+    showStatus('status-report1', 'Generating CSV...', 'loading');
+
+    try {
+      if (!progressData || progressData.length === 0) {
+        throw new Error('No data available');
+      }
+
+      // Prepare CSV headers
+      const headers = ['Grade Level', 'Section', 'Total Students', 'Average Story Progress', 'Average Experience', 'Engagement Rate'];
+      
+      // Group by grade and section
+      const gradeMap = {};
+      progressData.forEach(item => {
+        if (!gradeMap[item.gradeLevel]) {
+          gradeMap[item.gradeLevel] = {};
+        }
+        gradeMap[item.gradeLevel][item.section] = item;
+      });
+
+      // Prepare CSV rows
+      let csvContent = headers.join(',') + '\n';
+      
+      Object.keys(gradeMap).sort((a, b) => a - b).forEach(grade => {
+        Object.keys(gradeMap[grade]).sort().forEach(section => {
+          const item = gradeMap[grade][section];
+          const row = [
+            grade,
+            section,
+            item.totalStudents || 0,
+            item.averageStoryProgress || 0,
+            item.averageExperience || 0,
+            ((item.engagementRate || 0) * 100).toFixed(2) + '%'
+          ];
+          csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+        });
+      });
+
+      // Download CSV
+      downloadCSVFile(csvContent, `STELLAR_Overall_Report_${new Date().toISOString().split('T')[0]}.csv`);
+      showStatus('status-report1', '✓ Report downloaded successfully!', 'success');
+      
+      setTimeout(() => {
+        statusEl.style.display = 'none';
+      }, 3000);
+
+    } catch (error) {
+      console.error('Error generating CSV:', error);
+      showStatus('status-report1', 'Error generating report. Please try again.', 'error');
+    }
+  };
+
+  // Download Section Report as CSV
+  window.downloadSectionReportCSV = async function() {
+    const gradeSelect = document.getElementById('gradeSelect');
+    const sectionSelect = document.getElementById('sectionSelect');
+    const statusEl = document.getElementById('status-report2');
+
+    const gradeLevel = gradeSelect.value;
+    const section = sectionSelect.value;
+
+    if (!gradeLevel || !section) {
+      showStatus('status-report2', 'Please select both grade and section.', 'error');
+      return;
+    }
+
+    showStatus('status-report2', 'Generating CSV...', 'loading');
+
+    try {
+      // Fetch students for this section
+      const studentsResponse = await fetch(`${API_BASE_URL}/api/admin/class/students?gradeLevel=${gradeLevel}&section=${section}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!studentsResponse.ok) {
+        throw new Error(`HTTP error! status: ${studentsResponse.status}`);
+      }
+
+      const students = await studentsResponse.json();
+      console.log('Students fetched for CSV:', students);
+
+      // Prepare CSV headers
+      const headers = ['#', 'Student Name', 'Story Progress', 'Experience Points', 'Text Extract', 'Two Truths', 'Statement Scrutinize', 'Last Login'];
+      
+      // Prepare CSV rows
+      let csvContent = headers.join(',') + '\n';
+      
+      students.forEach((student, index) => {
+        const lastLogin = student.lastLogin ? new Date(student.lastLogin).toLocaleString() : 'N/A';
+        const row = [
+          index + 1,
+          student.name,
+          student.storyProgress || 0,
+          student.experiencePoints || 0,
+          student.textExtractScore || 0,
+          student.twoTruthsScore || 0,
+          student.statementScrutinizeScore || 0,
+          lastLogin
+        ];
+        csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+      });
+
+      // Download CSV
+      downloadCSVFile(csvContent, `STELLAR_Grade${gradeLevel}_Section${section}_Report_${new Date().toISOString().split('T')[0]}.csv`);
+      showStatus('status-report2', '✓ Report downloaded successfully!', 'success');
+      
+      setTimeout(() => {
+        statusEl.style.display = 'none';
+      }, 3000);
+
+    } catch (error) {
+      console.error('Error generating CSV:', error);
+      showStatus('status-report2', 'Error generating report. Please try again.', 'error');
+    }
+  };
+
+  // Helper function to download CSV file
+  function downloadCSVFile(csvContent, filename) {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
   }
 
   // Show status message
