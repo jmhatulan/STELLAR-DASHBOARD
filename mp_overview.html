@@ -39,34 +39,162 @@
       cursor: pointer;
     }
 
-    .grid-container {
+    .main-grid-container {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 350px minmax(0, 1fr);
       gap: 20px;
+      align-items: start;
+      width: 100%;
+      max-width: 100%;
+      overflow: hidden;
     }
 
-    .full-width {
-      grid-column: 1;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      align-items: stretch;
-    }
-
-    .left-column {
+    .grades-column {
       display: flex;
       flex-direction: column;
       gap: 20px;
-      height: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 10px;
+      min-width: 0;
     }
 
-    .right-column {
+    .overview-column {
       display: flex;
       flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .progress-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: white;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: auto;
+      flex-shrink: 0;
+    }
+
+    .progress-card-header {
+      font-size: 13px;
+      font-weight: 500;
+      color: #666;
+      border-bottom: 1px solid #eee;
+      padding: 10px 15px;
+      margin: 0;
+    }
+
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      flex: 1;
+    }
+
+    .progress-section {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .charts-section {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 10px;
+      padding: 12px 15px;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .left-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .middle-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .progress-info {
+      font-size: 12px;
+      color: #333;
+      margin-bottom: 6px;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #f0f0f0;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 6px 0;
+    }
+
+    .progress-fill {
       height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+      width: 10%;
+      border-radius: 6px;
+    }
+
+    .progress-percentage {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .chart-donut {
+      position: relative;
+      width: 70px;
+      height: 70px;
+    }
+
+    .accuracy-label {
+      font-size: 9px;
+      color: #666;
+      text-align: center;
+      line-height: 1.2;
+      font-weight: 500;
+    }
+
+    .chart-bar {
+      position: relative;
+      width: 100%;
+      max-width: 200px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chart-label {
+      font-size: 9px;
+      color: #666;
+      text-align: center;
+    }
+
+    canvas {
+      display: block !important;
+      width: auto !important;
+      height: auto !important;
+      max-width: none !important;
+      max-height: none !important;
+    }
+
+    .overview-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
     .chart-card {
@@ -78,6 +206,8 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
+      min-width: 0;
+      width: 100%;
     }
 
     .chart-card h3 {
@@ -86,34 +216,15 @@
       font-weight: 600;
       color: #333;
       flex-shrink: 0;
+      word-break: break-word;
     }
 
     .chart-container {
       position: relative;
       height: 250px;
       margin-bottom: 30px;
-    }
-
-    .progress-bar {
+      min-width: 0;
       width: 100%;
-      height: 12px;
-      background: #f0f0f0;
-      border-radius: 6px;
-      overflow: hidden;
-      margin: 10px 0;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-      width: 10%;
-      border-radius: 6px;
-    }
-
-    .progress-label {
-      font-size: 14px;
-      color: #666;
-      margin-top: 8px;
     }
 
     .performance-value {
@@ -177,9 +288,105 @@
       text-align: right;
     }
 
-    @media (max-width: 1200px) {
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 20px;
+    }
+
+    @media (max-width: 1400px) {
+      .main-grid-container {
+        grid-template-columns: 1fr;
+        overflow: visible;
+      }
+
+      .grades-column {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        max-height: none;
+        gap: 20px;
+        padding-right: 0;
+        overflow-x: hidden;
+      }
+
+      .overview-column {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .progress-card {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .grades-column {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
       .grid-2 {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-grid-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .grades-column {
+        grid-template-columns: 1fr;
+        overflow-x: hidden;
+      }
+
+      .charts-section {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-bar {
+        max-width: 100%;
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .overview-column {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .chart-container {
+        height: 200px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .overview-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .overview-header h1 {
+        font-size: 20px;
+      }
+
+      .chart-card {
+        padding: 15px;
+      }
+
+      .chart-container {
+        height: 150px;
       }
     }
   </style>
@@ -196,72 +403,79 @@
     </select>
   </div>
 
-  <div class="grid-container">
-    <!-- Students Engagement -->
-    <div class="chart-card full-width">
-      <h3>Students Engagment</h3>
-      <div class="chart-container">
-        <canvas id="engagementChart"></canvas>
-      </div>
+  <div class="main-grid-container">
+    <!-- Left Column: Grade Progress Cards -->
+    <div class="grades-column" id="gradesColumn">
+      <!-- Grade cards will be dynamically generated here -->
     </div>
 
-    <!-- Middle Row -->
-    <div class="grid-2">
-      <!-- Left Column -->
-      <div class="left-column">
-        <!-- Story Progress -->
-        <div class="chart-card">
-          <h3>Story Progress</h3>
-          <div style="margin-top: 30px;">
-            <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">Class's Average Story Completed</p>
-            <div class="progress-bar">
-              <div class="progress-fill"></div>
+    <!-- Right Column: Overview Charts -->
+    <div class="overview-column">
+      <!-- Students Engagement -->
+      <div class="chart-card">
+        <h3>Students Engagement</h3>
+        <div class="chart-container">
+          <canvas id="engagementChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Middle Row -->
+      <div class="grid-2">
+        <!-- Left Sub-Column -->
+        <div class="left-column">
+          <!-- Story Progress -->
+          <div class="chart-card">
+            <h3>Story Progress</h3>
+            <div style="margin-top: 30px;">
+              <p style="font-size: 14px; color: #666; margin: 0 0 10px 0;">Class's Average Story Completed</p>
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+              <div class="progress-label">10%</div>
             </div>
-            <div class="progress-label">10%</div>
+          </div>
+
+          <!-- Average Performance -->
+          <div class="chart-card">
+            <h3>Average Performance</h3>
+            <div class="performance-value">XXXX PTS.</div>
+            <div class="performance-label">Students Average Challenge Score</div>
           </div>
         </div>
 
-        <!-- Average Performance -->
-        <div class="chart-card">
-          <h3>Average Performance</h3>
-          <div class="performance-value">XXXX PTS.</div>
-          <div class="performance-label">Students Average Challenge Score</div>
-        </div>
-      </div>
-
-      <!-- Right Column -->
-      <div class="right-column">
-        <!-- Weekly Challenge Attempts -->
-        <div class="chart-card">
-          <h3>Total Challenge Attempts</h3>
-          <div class="challenge-attempts">
-            <div class="challenge-bar">
-              <div class="bar-label">Text Extract</div>
-              <div class="bar-chart">
-                <div class="bar-fill" id="overview-text-fill" style="background: #ec4899; width: 0%;"></div>
+        <!-- Right Sub-Column -->
+        <div class="right-column">
+          <!-- Weekly Challenge Attempts -->
+          <div class="chart-card">
+            <h3>Total Challenge Attempts</h3>
+            <div class="challenge-attempts">
+              <div class="challenge-bar">
+                <div class="bar-label">Text Extract</div>
+                <div class="bar-chart">
+                  <div class="bar-fill" id="overview-text-fill" style="background: #ec4899; width: 0%;"></div>
+                </div>
+                <div class="bar-value" id="overview-text-value">0</div>
               </div>
-              <div class="bar-value" id="overview-text-value">0</div>
-            </div>
-            <div class="challenge-bar">
-              <div class="bar-label">Two Truths</div>
-              <div class="bar-chart">
-                <div class="bar-fill" id="overview-two-fill" style="background: #eab308; width: 0%;"></div>
+              <div class="challenge-bar">
+                <div class="bar-label">Two Truths</div>
+                <div class="bar-chart">
+                  <div class="bar-fill" id="overview-two-fill" style="background: #eab308; width: 0%;"></div>
+                </div>
+                <div class="bar-value" id="overview-two-value">0</div>
               </div>
-              <div class="bar-value" id="overview-two-value">0</div>
-            </div>
-            <div class="challenge-bar">
-              <div class="bar-label">Statement Scrutinize</div>
-              <div class="bar-chart">
-                <div class="bar-fill" id="overview-stmt-fill" style="background: #10b981; width: 0%;"></div>
+              <div class="challenge-bar">
+                <div class="bar-label">Statement Scrutinize</div>
+                <div class="bar-chart">
+                  <div class="bar-fill" id="overview-stmt-fill" style="background: #10b981; width: 0%;"></div>
+                </div>
+                <div class="bar-value" id="overview-stmt-value">0</div>
               </div>
-              <div class="bar-value" id="overview-stmt-value">0</div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-
 
 </body>
 </html>

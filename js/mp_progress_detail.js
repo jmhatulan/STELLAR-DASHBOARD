@@ -545,3 +545,18 @@ function exportToPDF() {
 
   html2pdf().set(opt).from(reportHTML).save();
 }
+
+// Handle back button click with fade transition
+function handleBackClick() {
+  const iframe = window.parent.document.getElementById('page-progress');
+  if (iframe) {
+    iframe.style.opacity = '0';
+    iframe.style.transition = 'opacity 0.5s ease-in-out';
+    setTimeout(() => {
+      iframe.src = 'mp_progress_section.html';
+      iframe.onload = function() {
+        setTimeout(() => { iframe.style.opacity = '1'; }, 10);
+      };
+    }, 250);
+  }
+}

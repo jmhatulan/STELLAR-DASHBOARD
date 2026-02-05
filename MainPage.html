@@ -16,15 +16,17 @@
   <div class="layout">
 
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <div class="logo">
-        STELLAR
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          STELLAR
+        </div>
+        <button class="toggle-btn" id="toggleBtn" title="Hide sidebar">☰</button>
       </div>
 
       <nav class="menu">
 
         <a href="#" class="menu-item active" data-page="overview">Overview</a>
-        <a href="#" class="menu-item" data-page="progress">Progress</a>
         <a href="#" class="menu-item" data-page="gamemastery">Game Mastery</a>
 
         <hr class="divider" /> 
@@ -43,8 +45,8 @@
       <!-- OVERVIEW PAGE -->
       <iframe id="page-overview" class="page" style="border: none; width: 100%; height: 100%;" src="mp_overview.html"></iframe>
 
-      <!-- PROGRESS PAGE -->
-      <iframe id="page-progress" class="page" style="display: none; border: none; width: 100%; height: 100%;" src="mp_progress.html"></iframe>
+      <!-- PROGRESS SECTION PAGE -->
+      <iframe id="page-progress" class="page" style="display: none; border: none; width: 100%; height: 100%;" src="mp_progress_section.html"></iframe>
 
       <!-- GAME MASTERY PAGE -->
       <iframe id="page-gamemastery" class="page" style="display: none; border: none; width: 100%; height: 100%;" src="mp_gamemastery.html"></iframe>

@@ -34,18 +34,26 @@ document.addEventListener("DOMContentLoaded", function () {
     sessionStorage.removeItem('selectedGrade');
     try {
       if (window.parent !== window) {
-        const iframeElement = window.parent.document.getElementById('page-progress');
-        if (iframeElement) {
-          iframeElement.src = 'mp_progress.html';
-        } else {
-          window.location.href = 'mp_progress.html';
+        // Get all pages from parent
+        const allPages = window.parent.document.querySelectorAll('.page');
+        allPages.forEach(page => page.style.display = 'none');
+        
+        // Show the overview page
+        const overviewPage = window.parent.document.getElementById('page-overview');
+        if (overviewPage) {
+          overviewPage.style.display = 'block';
         }
-      } else {
-        window.location.href = 'mp_progress.html';
+        
+        // Update menu styling
+        const menuItems = window.parent.document.querySelectorAll('.menu-item[data-page]');
+        menuItems.forEach(item => item.classList.remove('active'));
+        const overviewMenu = window.parent.document.querySelector('[data-page="overview"]');
+        if (overviewMenu) {
+          overviewMenu.classList.add('active');
+        }
       }
     } catch (error) {
       console.error('Navigation error:', error);
-      window.location.href = 'mp_progress.html';
     }
   });
 
@@ -126,20 +134,18 @@ document.addEventListener("DOMContentLoaded", function () {
         sessionStorage.setItem('selectedGrade', selectedGrade);
         sessionStorage.setItem('selectedSection', classData.section);
         
-        try {
-          if (window.parent !== window) {
-            const iframeElement = window.parent.document.getElementById('page-progress');
-            if (iframeElement) {
+        if (window.parent !== window) {
+          const iframeElement = window.parent.document.getElementById('page-progress');
+          if (iframeElement) {
+            iframeElement.style.opacity = '0';
+            iframeElement.style.transition = 'opacity 0.5s ease-in-out';
+            setTimeout(() => {
               iframeElement.src = 'mp_progress_detail.html';
-            } else {
-              window.location.href = 'mp_progress_detail.html';
-            }
-          } else {
-            window.location.href = 'mp_progress_detail.html';
+              iframeElement.onload = function() {
+                setTimeout(() => { iframeElement.style.opacity = '1'; }, 10);
+              };
+            }, 250);
           }
-        } catch (error) {
-          console.error('Navigation error:', error);
-          window.location.href = 'mp_progress_detail.html';
         }
       });
 

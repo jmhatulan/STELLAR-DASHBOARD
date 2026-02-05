@@ -1,4 +1,35 @@
 document.addEventListener("DOMContentLoaded", function () {
+  // ---- SIDEBAR TOGGLE ----
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggleBtn');
+  
+  // Create expand button
+  const expandBtn = document.createElement('button');
+  expandBtn.className = 'expand-btn';
+  expandBtn.innerHTML = '☰';
+  expandBtn.title = 'Show sidebar';
+  document.body.appendChild(expandBtn);
+  
+  // Load sidebar state from localStorage
+  const sidebarState = localStorage.getItem('sidebarCollapsed');
+  if (sidebarState === 'true') {
+    sidebar.classList.add('collapsed');
+    expandBtn.classList.add('visible');
+  }
+  
+  // Toggle sidebar
+  toggleBtn.addEventListener('click', function() {
+    sidebar.classList.toggle('collapsed');
+    expandBtn.classList.toggle('visible');
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+  });
+  
+  expandBtn.addEventListener('click', function() {
+    sidebar.classList.remove('collapsed');
+    expandBtn.classList.remove('visible');
+    localStorage.setItem('sidebarCollapsed', 'false');
+  });
+
   // ---- PAGE NAVIGATION ----
   const menuItems = document.querySelectorAll(".menu-item[data-page]");
   const pages = document.querySelectorAll(".page");
@@ -31,11 +62,24 @@ document.addEventListener("DOMContentLoaded", function () {
       // Get the page name
       const pageName = this.getAttribute("data-page");
 
-      // Hide all pages
-      pages.forEach(page => page.style.display = "none");
+      // Fade out all pages
+      pages.forEach(page => page.style.opacity = '0');
 
-      // Show the selected page
-      document.getElementById(`page-${pageName}`).style.display = "block";
+      setTimeout(() => {
+        // Hide all pages and show the selected page
+        pages.forEach(page => page.style.display = "none");
+        const targetPage = document.getElementById(`page-${pageName}`);
+        targetPage.style.display = "block";
+        targetPage.style.opacity = '0';
+
+        // Reset progress page iframe to sections view when accessing from menu
+        if (pageName === "progress") {
+          targetPage.src = "mp_progress_section.html";
+        }
+
+        // Trigger fade in
+        setTimeout(() => { targetPage.style.opacity = '1'; }, 10);
+      }, 250);
 
       // Update active menu item
       menuItems.forEach(mi => mi.classList.remove("active"));
