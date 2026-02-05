@@ -6,8 +6,9 @@
   <title>Download Reports</title>
   
   <link rel="stylesheet" href="css/style.css" />
-  <!-- html2pdf CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- jsPDF and AutoTable for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -201,9 +202,14 @@
 
       <div class="status-message" id="status-report1"></div>
       
-      <button class="btn-primary" onclick="downloadOverallReport()">
-        📥 Download Overall Report
-      </button>
+      <div class="button-group">
+        <button class="btn-primary" onclick="downloadOverallReport()">
+          📥 Download as PDF
+        </button>
+        <button class="btn-secondary" onclick="downloadOverallReportCSV()">
+          📊 Download as CSV
+        </button>
+      </div>
     </div>
 
     <!-- Report 2: Section Students Summary -->
@@ -242,9 +248,14 @@
 
       <div class="status-message" id="status-report2"></div>
       
-      <button class="btn-primary" id="downloadBtn2" onclick="downloadSectionReport()" disabled>
-        📥 Download Section Report
-      </button>
+      <div class="button-group">
+        <button class="btn-primary" id="downloadBtn2" onclick="downloadSectionReport()" disabled>
+          📥 Download as PDF
+        </button>
+        <button class="btn-secondary" id="downloadBtn2CSV" onclick="downloadSectionReportCSV()" disabled>
+          📊 Download as CSV
+        </button>
+      </div>
     </div>
 
   </div>
