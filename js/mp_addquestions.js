@@ -1,8 +1,10 @@
-// VALIDATORS:
+// =======================
+// VALIDATORS
+// =======================
+
 // FORMAT: PASSAGE;QUESTION;ANSWER
 function isTextExtractFormat(input) {
     if (typeof input !== "string") return false;
-
     const regex = /^[^;\n]+;[^;\n]+;[^;\n]+$/;
     return regex.test(input);
 }
@@ -10,51 +12,56 @@ function isTextExtractFormat(input) {
 // FORMAT: PASSAGE;STATEMENT1|STATEMENT2|STATEMENT3;INDEX
 function isTwoTruthsFormat(input) {
     if (typeof input !== "string") return false;
-
-    const regex =
-        /^[^;\n]+;[^|\n]+\|[^|\n]+\|[^|\n]+;[0-2]$/;
-
+    const regex = /^[^;\n]+;[^|\n]+\|[^|\n]+\|[^|\n]+;[0-2]$/;
     return regex.test(input);
 }
 
 // FORMAT: PASSAGE;STATEMENT1|STATEMENT2|STATEMENT3;INDEX|EVIDENCE
 function isStatementScrutinizeFormat(input) {
     if (typeof input !== "string") return false;
-
-    const regex =
-        /^[^;\n]+;[^|\n]+\|[^|\n]+\|[^|\n]+;[0-2]\|[^;\n]+$/;
-
+    const regex = /^[^;\n]+;[^|\n]+\|[^|\n]+\|[^|\n]+;[0-2]\|[^;\n]+$/;
     return regex.test(input);
 }
 
+// =======================
+// CONFIG
+// =======================
+
 const baseURL = "https://stellar-backend-ki78.onrender.com";
 
-// PAGE LOGIC:
+// =======================
+// ELEMENT REFERENCES
+// =======================
+
 const container = document.getElementById("questionsContainer");
 const generateBtn = document.getElementById("generateBtn");
-const submitBtn = document.getElementById("submitBtn");
+const submitSelectedBtn = document.getElementById("submitSelectedBtn");
+const discardSelectedBtn = document.getElementById("discardSelectedBtn");
 const promptInput = document.getElementById("textPrompt");
-const submitModeSwitch = document.getElementById("submitModeSwitch");
-const discardAllBtn = document.getElementById("discardAllBtn");
 
-discardAllBtn.addEventListener("click", () => {
-    container.innerHTML = "";
-});
+// =======================
+// AUTO-EXPAND TEXTAREA
+// =======================
 
-// Auto-expand textarea
 promptInput.addEventListener("input", () => {
     promptInput.style.height = "auto";
     promptInput.style.height = promptInput.scrollHeight + "px";
 });
 
-// GameID mapping
+// =======================
+// GAME ID MAPPING
+// =======================
+
 function getGameID(mode) {
     if (mode === "Extract") return "TEST-01";
     if (mode === "Truth") return "TEST-02";
     if (mode === "Scrutinize") return "TEST-03";
 }
 
-// Generate questions
+// =======================
+// GENERATE QUESTIONS
+// =======================
+
 generateBtn.addEventListener("click", async () => {
     const textPrompt = promptInput.value.trim();
     if (!textPrompt) return;
@@ -63,17 +70,14 @@ generateBtn.addEventListener("click", async () => {
     const countInput = document.getElementById("questionCount");
     const targetCount = Math.min(parseInt(countInput.value, 10) || 1, 25);
 
-    // Initial hardcoded prompt (flexible)
     const basePrompt = `
 Generate exactly ONE question in strict format.
 The content must be based on the following input:
 
 ${textPrompt}
-  `.trim();
+    `.trim();
 
-    const messages = [
-        { role: "user", content: basePrompt }
-    ];
+    const messages = [{ role: "user", content: basePrompt }];
 
     let acceptedCount = 0;
     let safetyCounter = 0;
@@ -94,10 +98,8 @@ ${textPrompt}
         const output = data.output?.trim();
         if (!output) break;
 
-        // ALWAYS append assistant response
         messages.push({ role: "assistant", content: output });
 
-        // Validate format
         let isValid = false;
         if (gameMode === "Extract") isValid = isTextExtractFormat(output);
         if (gameMode === "Truth") isValid = isTwoTruthsFormat(output);
@@ -105,13 +107,10 @@ ${textPrompt}
 
         if (!isValid) {
             console.log("Rejected output:", output);
-
-            // Ask for another
             messages.push({ role: "user", content: "Another" });
             continue;
         }
 
-        // Parse
         const [passage, question, answer] = output.split(";");
 
         const card = document.createElement("div");
@@ -122,14 +121,16 @@ ${textPrompt}
         card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="gamemode-label gamemode-${gameMode.toLowerCase()}">
-            ${gameMode === "Extract" ? "Text Extract" :
-                gameMode === "Truth" ? "Two Truths" :
-                    "Statement Scrutinize"}
+                ${gameMode === "Extract"
+                ? "Text Extract"
+                : gameMode === "Truth"
+                    ? "Two Truths"
+                    : "Statement Scrutinize"}
             </span>
 
             <div>
-            <input type="checkbox" class="select-question" />
-            <button class="discard-btn">Discard</button>
+                <input type="checkbox" class="select-question" />
+                <button class="discard-btn">Discard</button>
             </div>
         </div>
 
@@ -145,21 +146,20 @@ ${textPrompt}
             card.remove();
         });
 
-
-        // Ask for another
         messages.push({ role: "user", content: "Another" });
     }
 });
 
-// Submit questions
-submitBtn.addEventListener("click", async () => {
+// =======================
+// SUBMIT SELECTED QUESTIONS
+// =======================
+
+submitSelectedBtn.addEventListener("click", async () => {
     const cards = Array.from(container.children);
-    const submitUnchecked = submitModeSwitch.checked;
 
     for (const card of cards) {
         const checked = card.querySelector(".select-question").checked;
-
-        if (submitUnchecked ? checked : !checked) continue;
+        if (!checked) continue;
 
         const sections = card.querySelectorAll(".section");
         const textPrompt = sections[0].innerText.replace("Text Prompt", "").trim();
@@ -174,11 +174,24 @@ submitBtn.addEventListener("click", async () => {
                 textPrompt,
                 question,
                 answer,
-                genre: "Test",  //PLACEHOLDER
+                genre: "Test",
                 gameMode: card.dataset.gameMode
             })
         });
 
         card.remove();
     }
+});
+
+// =======================
+// DISCARD SELECTED QUESTIONS
+// =======================
+
+discardSelectedBtn.addEventListener("click", () => {
+    const cards = Array.from(container.children);
+
+    cards.forEach(card => {
+        const checked = card.querySelector(".select-question").checked;
+        if (checked) card.remove();
+    });
 });

@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const cardIndex = index + 1;
 
       // Calculate grade-level averages
-      const avgChapters = (sectionsList.reduce((sum, s) => sum + s.avgChapters, 0) / sectionsList.length);
+      const avgStoryLevel = (sectionsList.reduce((sum, s) => sum + s.avgStoryLevel, 0) / sectionsList.length);
       const avgAccuracy = (sectionsList.reduce((sum, s) => sum + s.avgAccuracy, 0) / sectionsList.length);
       const avgActivityData = [];
       if (sectionsList[0] && sectionsList[0].activityLabels) {
@@ -76,11 +76,11 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="progress-card-header">Grade ${gradeLevel}</div>
         <div class="card-content">
           <div class="progress-section">
-            <div class="progress-info">Average Chapters Completed ${avgChapters.toFixed(1)}/6</div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${(avgChapters / 6) * 100}%;"></div>
-            </div>
-            <div class="progress-percentage">${Math.round((avgChapters / 6) * 100)}%</div>
+            <div class="progress-info">Average Story Level ${avgStoryLevel.toFixed(1)}/75</div>
+              <div class="progress-bar">
+              <div class="progress-fill" style="width: ${(avgStoryLevel / 75) * 100}%;"></div>
+              </div>
+            <div class="progress-percentage">${Math.round((avgStoryLevel / 75) * 100)}%</div>
           </div>
           <div class="charts-section">
             <div class="left-section">

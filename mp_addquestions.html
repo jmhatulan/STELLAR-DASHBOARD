@@ -211,35 +211,22 @@
     </label>
   </div>
 
-  <label style="display:block; margin-top:10px;">
-    Number of questions (max 25):
-    <input type="number" id="questionCount" min="1" max="25" value="5" style="width:80px; margin-left:6px;" />
-  </label>
-
-  <button id="generateBtn">Generate Questions</button>
-
-  <!-- SUBMIT MODE SWITCH -->
-  <div class="submit-mode">
-    <label class="switch">
-      <input type="checkbox" id="submitModeSwitch" />
-      <span class="slider"></span>
+  <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+    <label>
+      Questions:
+      <input type="number" id="questionCount" min="1" max="25" value="5" style="width:70px; margin-left:4px;" />
     </label>
-    <span>
-      Submit unchecked questions
-      <span class="tooltip">❓
-        <span class="tooltip-text">
-          ON: Submit unchecked questions<br />
-          OFF: Submit only checked questions
-        </span>
-      </span>
-    </span>
+
+    <button id="generateBtn">Generate Questions</button>
   </div>
 
   <!-- GENERATED QUESTIONS -->
   <div id="questionsContainer"></div>
 
-  <button id="submitBtn">Submit Questions</button>
-  <button id="discardAllBtn" style="margin-left:10px;">Discard All Questions</button>
+  <button id="submitSelectedBtn">Submit Selected Questions</button>
+  <button id="discardSelectedBtn" style="margin-left:10px;">
+    Discard Selected Questions
+  </button>
 
   <script src="js/mp_addquestions.js"></script>
 </body>
