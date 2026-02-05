@@ -349,7 +349,7 @@ document.addEventListener("DOMContentLoaded", function () {
       </head>
       <body>
         <div class="header">
-          <h1>🎓 STELLAR Dashboard Report</h1>
+          <h1>STELLAR Dashboard Report</h1>
           <p>Overall Summary - All Grades and Sections</p>
           <p>Generated: ${new Date().toLocaleString()}</p>
         </div>
@@ -526,7 +526,7 @@ document.addEventListener("DOMContentLoaded", function () {
       </head>
       <body>
         <div class="header">
-          <h1>🎓 STELLAR Dashboard Report</h1>
+          <h1>STELLAR Dashboard Report</h1>
           <p>Grade ${gradeLevel} - Section ${section} Student Summary</p>
           <p>Generated: ${new Date().toLocaleString()}</p>
         </div>
