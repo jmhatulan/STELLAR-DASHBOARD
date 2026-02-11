@@ -24,19 +24,28 @@
       box-sizing: border-box;
     }
 
+    /* GAME MODE SELECTION */
     .gamemode-group {
       display: flex;
+      justify-content: center;
       gap: 12px;
-      margin: 12px 0;
+      margin: 20px 0;
     }
 
     .gamemode-card {
+      flex: 1;
+      max-width: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       border: 1px solid #ccc;
-      padding: 10px 16px;
+      padding: 12px;
       border-radius: 8px;
       cursor: pointer;
       user-select: none;
       background: #f9f9f9;
+      transition: all 0.2s;
     }
 
     .gamemode-card input {
@@ -48,101 +57,29 @@
       color: #2c6bed;
     }
 
-    #questionsContainer {
-      margin-top: 16px;
-      height: 420px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
-      box-sizing: border-box;
+    /* TOOLTIP LOGIC: Only triggers on the ? icon */
+    .info-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
     }
 
-    .question-card {
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #fff;
-    }
-
-    .question-card input[type="checkbox"] {
-      margin-bottom: 8px;
-    }
-
-    .section {
-      margin-bottom: 6px;
-      padding: 6px;
-      background: #f3f3f3;
-      border-radius: 4px;
+    .info-icon {
       font-size: 14px;
-    }
-
-    button {
-      margin-top: 10px;
-      padding: 8px 14px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .submit-mode {
-      margin: 12px 0;
+      color: #666;
+      cursor: help;
+      background: #eee;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
+      justify-content: center;
+      transition: background 0.2s;
     }
 
-    /* Switch */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 42px;
-      height: 22px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      border-radius: 22px;
-      transition: 0.3s;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 2px;
-      bottom: 2px;
-      background-color: white;
-      border-radius: 50%;
-      transition: 0.3s;
-    }
-
-    .switch input:checked+.slider {
-      background-color: #2c6bed;
-    }
-
-    .switch input:checked+.slider:before {
-      transform: translateX(20px);
-    }
-
-    /* Tooltip */
-    .tooltip {
-      position: relative;
-      cursor: pointer;
-      margin-left: 4px;
+    .info-icon:hover {
+      background: #ddd;
     }
 
     .tooltip-text {
@@ -150,29 +87,59 @@
       position: absolute;
       background: #333;
       color: white;
-      padding: 6px;
-      border-radius: 4px;
-      top: 20px;
-      left: 0;
-      white-space: nowrap;
+      padding: 10px 14px;
+      border-radius: 6px;
+      bottom: 130%;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: normal;
+      width: 220px;
       font-size: 12px;
-      z-index: 10;
+      z-index: 100;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      line-height: 1.4;
     }
 
-    .tooltip:hover .tooltip-text {
+    .info-container:hover .tooltip-text {
       visibility: visible;
     }
 
-    .gamemode-label {
-      font-size: 12px;
-      font-weight: bold;
-      padding: 4px 8px;
-      border-radius: 12px;
-      color: white;
-      user-select: none;
+    /* QUESTION CONTAINER & CARDS */
+    #questionsContainer {
+      margin-top: 16px;
+      height: 480px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 15px;
+      box-sizing: border-box;
+      background: #fcfcfc;
     }
 
-    /* Individual gamemode colors */
+    .question-card {
+      position: relative;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      padding-bottom: 70px;
+      /* Prevents overlap with trash icon */
+      margin-bottom: 16px;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .gamemode-label {
+      display: inline-block;
+      font-size: 16px;
+      /* Increased size */
+      font-weight: bold;
+      padding: 6px 16px;
+      border-radius: 20px;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 15px;
+    }
+
     .gamemode-extract {
       background-color: #2c6bed;
     }
@@ -184,49 +151,239 @@
     .gamemode-scrutinize {
       background-color: #e67e22;
     }
+
+    .section {
+      margin-bottom: 15px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .section strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+      color: #333;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-color: #eee;
+    }
+
+    /* INPUTS & BUTTONS */
+    .select-question {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+    }
+
+    .trash-btn {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      background: #fff;
+      border: 1px solid #ffcfcf;
+      cursor: pointer;
+      padding: 8px;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #e74c3c;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .trash-btn:hover {
+      background: #fdf2f2;
+      border-color: #e74c3c;
+    }
+
+    .trash-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* LOADING & BOTTOM CONTROLS */
+    #loadingIndicator {
+      display: none;
+      text-align: center;
+      padding: 15px;
+      font-style: italic;
+      color: #2c6bed;
+      font-weight: bold;
+    }
+
+    .bottom-controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+      padding-bottom: 20px;
+    }
+
+    #submitSelectedBtn,
+    #discardSelectedBtn {
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.2s;
+    }
+
+    #submitSelectedBtn {
+      background-color: #2c6bed;
+      color: white;
+      border: none;
+    }
+
+    #submitSelectedBtn:hover {
+      background-color: #1a56cc;
+    }
+
+    #discardSelectedBtn {
+      background-color: #fff5f5;
+      color: #c0392b;
+      border: 1px solid #f5c6cb;
+    }
+
+    #discardSelectedBtn:hover {
+      background-color: #fee2e2;
+      border-color: #e74c3c;
+    }
+
+    #discardSelectedBtn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid #2c6bed;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* LIST STYLES FOR STATEMENTS */
+    .statement-list {
+      padding-left: 0;
+      list-style: none;
+      margin: 10px 0;
+    }
+
+    .statement-item {
+      padding: 8px;
+      margin-bottom: 5px;
+      background: #f9f9f9;
+      border-left: 4px solid #ddd;
+    }
+
+    .statement-item.is-lie {
+      border-left-color: #e74c3c;
+      background: #fff5f5;
+    }
+
+    .answer-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: #2c6bed;
+      color: white;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .evidence-box {
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px dashed #2ca36b;
+      background: #f0fff4;
+      font-style: italic;
+    }
   </style>
 </head>
 
 <body>
   <h1>Add Questions</h1>
 
-  <!-- TEXT PROMPT -->
   <textarea id="textPrompt" placeholder="Enter topic, passage, or story here..."></textarea>
 
-  <!-- GAME MODE SELECTION -->
   <div class="gamemode-group">
     <label class="gamemode-card">
       <input type="radio" name="gamemode" value="Extract" checked />
       <span>Text Extract</span>
+      <div class="info-container">
+        <span class="info-icon">?</span>
+        <span class="tooltip-text">Identify a specific detail from the text. The answer must be found word-for-word in
+          the passage.</span>
+      </div>
     </label>
 
     <label class="gamemode-card">
       <input type="radio" name="gamemode" value="Truth" />
       <span>Two Truths</span>
+      <div class="info-container">
+        <span class="info-icon">?</span>
+        <span class="tooltip-text">Analyze 3 statements. Exactly two are true based on the passage, and one is a lie.
+          Target the index of the lie.</span>
+      </div>
     </label>
 
     <label class="gamemode-card">
       <input type="radio" name="gamemode" value="Scrutinize" />
       <span>Statement Scrutinize</span>
+      <div class="info-container">
+        <span class="info-icon">?</span>
+        <span class="tooltip-text">A "Find the Lie" activity that requires word-for-word evidence from the text to prove
+          why the statement is false.</span>
+      </div>
     </label>
   </div>
 
-  <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-    <label>
-      Questions:
-      <input type="number" id="questionCount" min="1" max="25" value="5" style="width:70px; margin-left:4px;" />
+  <div id="loadingIndicator"><span class="spinner"></span>Analyzing text and generating questions...</div>
+
+  <div style="display:flex; align-items:center; justify-content: center; gap:15px; margin: 20px 0;">
+    <label style="font-weight: bold; font-size: 14px;">
+      Questions to Generate:
+      <input type="number" id="questionCount" min="1" max="25" value="5"
+        style="padding: 6px; width:60px; margin-left:8px;" />
     </label>
 
-    <button id="generateBtn">Generate Questions</button>
+    <button id="generateBtn"
+      style="padding: 8px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">Generate
+      Questions</button>
   </div>
 
-  <!-- GENERATED QUESTIONS -->
   <div id="questionsContainer"></div>
 
-  <button id="submitSelectedBtn">Submit Selected Questions</button>
-  <button id="discardSelectedBtn" style="margin-left:10px;">
-    Discard Selected Questions
-  </button>
+  <div class="bottom-controls">
+    <button id="submitSelectedBtn">Submit Selected Questions</button>
+    <button id="discardSelectedBtn">
+      Discard Selected Questions
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>
+    </button>
+  </div>
 
   <script src="js/mp_addquestions.js"></script>
 </body>
