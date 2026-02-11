@@ -20,14 +20,23 @@ document.addEventListener("DOMContentLoaded", function () {
   async function fetchDashboardData(gradeLevel = null) {
     try {
       let overviewUrl = `${API_BASE_URL}/api/admin/dashboard/overview`;
+      let challengeAttemptsUrl = `${API_BASE_URL}/api/admin/dashboard/challenge-attempts`;
       if (gradeLevel && gradeLevel !== 'All Grade') {
         const grade = parseInt(gradeLevel.replace('Grade ', ''));
         overviewUrl += `?gradeLevel=${grade}`;
+        challengeAttemptsUrl += `?gradeLevel=${grade}`;
       }
 
-      // Fetch both overview and progress data in parallel
-      const [overviewResponse, progressResponse] = await Promise.all([
+      // Fetch overview, challenge attempts, and progress data in parallel
+      const [overviewResponse, challengeResponse, progressResponse] = await Promise.all([
         fetch(overviewUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }),
+        fetch(challengeAttemptsUrl, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -43,18 +52,21 @@ document.addEventListener("DOMContentLoaded", function () {
         })
       ]);
 
-      if (!overviewResponse.ok || !progressResponse.ok) {
+      if (!overviewResponse.ok || !progressResponse.ok || !challengeResponse.ok) {
         throw new Error('HTTP error fetching data');
       }
 
       const overviewData = await overviewResponse.json();
+      const challengeData = await challengeResponse.json();
       const progressData = await progressResponse.json();
 
       console.log('Dashboard data retrieved:', overviewData);
+      console.log('Challenge attempts data retrieved:', challengeData);
       console.log('Progress data retrieved:', progressData);
 
       initializeCharts(overviewData);
       updateProgressBars(overviewData);
+      updateChallengeAttempts(challengeData);
       displayGradeView(progressData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -287,25 +299,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
     }
-
-    // ---- TOTAL CHALLENGE ATTEMPTS ----
-    updateChallengeAttempts(data);
   }
 
   function updateChallengeAttempts(data) {
-    // Try to get from totalChallengeAttempts first, fallback to weeklyChallengeAttempts array
+    // Extract from the challengeAttemptsTotals object returned by the endpoint
     let text = 0, two = 0, stmt = 0;
 
-    if (data.totalChallengeAttempts && typeof data.totalChallengeAttempts === 'object') {
-      text = data.totalChallengeAttempts.textExtract ?? 0;
-      two = data.totalChallengeAttempts.twoTruths ?? 0;
-      stmt = data.totalChallengeAttempts.statementScrutinize ?? 0;
-    } else if (data.weeklyChallengeAttempts && Array.isArray(data.weeklyChallengeAttempts.data)) {
-      // Fallback: use weekly data if available
-      const weeklyData = data.weeklyChallengeAttempts.data;
-      text = weeklyData[0] ?? 0;
-      two = weeklyData[1] ?? 0;
-      stmt = weeklyData[2] ?? 0;
+    if (data.challengeAttemptsTotals && typeof data.challengeAttemptsTotals === 'object') {
+      text = data.challengeAttemptsTotals.textExtract ?? 0;
+      two = data.challengeAttemptsTotals.twoTruths ?? 0;
+      stmt = data.challengeAttemptsTotals.statementScrutinize ?? 0;
     }
 
     text = Number(text);
@@ -363,12 +366,16 @@ document.addEventListener("DOMContentLoaded", function () {
         data: [45, 38, 50, 42, 55, 48, 60, 35, 70]
       },
       storyProgressAverage: 31,
-      averagePerformance: 2260,
-      totalChallengeAttempts: {
+      averagePerformance: 2260
+    };
+
+    const sampleChallengeData = {
+      challengeAttemptsTotals: {
         textExtract: 9,
         twoTruths: 897,
         statementScrutinize: 263
-      }
+      },
+      byGradeLevel: []
     };
 
     const sampleProgressData = [
@@ -431,6 +438,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log('Using sample data due to API error');
     initializeCharts(sampleOverviewData);
     updateProgressBars(sampleOverviewData);
+    updateChallengeAttempts(sampleChallengeData);
     displayGradeView(sampleProgressData);
   }
 
