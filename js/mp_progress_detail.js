@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const chartInstances = {};
 
   // Update page title
-  document.querySelector('h1').textContent = `Student Progress - Grade ${gradeLevel} ${section}`;
+  document.querySelector('h1').textContent = `Grade ${gradeLevel} - ${section}`;
 
   // Fetch students in the class
   async function fetchClassStudents() {
@@ -202,23 +202,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // Update challenge attempts
     const challengeBars = document.querySelectorAll('.challenge-bar');
     if (challengeBars.length >= 3) {
+      const textExtractCount = challengeAttempts.textExtract;
+      const twoTruthsCount = challengeAttempts.twoTruths;
+      const statementScrutinizeCount = challengeAttempts.statementScrutinize;
+
+      // Calculate max for proportional scaling
+      const maxAttempts = Math.max(textExtractCount, twoTruthsCount, statementScrutinizeCount, 1);
+
       // Text Extract
       challengeBars[0].querySelector('.bar-label').textContent = 'Text Extract';
-      challengeBars[0].querySelector('.bar-value').textContent = challengeAttempts.textExtract;
+      challengeBars[0].querySelector('.bar-value').textContent = textExtractCount;
       challengeBars[0].querySelector('.bar-fill').style.width = 
-        Math.min(challengeAttempts.textExtract * 10, 100) + '%';
+        Math.round((textExtractCount / maxAttempts) * 100) + '%';
 
       // Two Truths
       challengeBars[1].querySelector('.bar-label').textContent = 'Two Truths';
-      challengeBars[1].querySelector('.bar-value').textContent = challengeAttempts.twoTruths;
+      challengeBars[1].querySelector('.bar-value').textContent = twoTruthsCount;
       challengeBars[1].querySelector('.bar-fill').style.width = 
-        Math.min(challengeAttempts.twoTruths * 10, 100) + '%';
+        Math.round((twoTruthsCount / maxAttempts) * 100) + '%';
 
       // Statement Scrutinize
       challengeBars[2].querySelector('.bar-label').textContent = 'Statement Scrutinize';
-      challengeBars[2].querySelector('.bar-value').textContent = challengeAttempts.statementScrutinize;
+      challengeBars[2].querySelector('.bar-value').textContent = statementScrutinizeCount;
       challengeBars[2].querySelector('.bar-fill').style.width = 
-        Math.min(challengeAttempts.statementScrutinize * 10, 100) + '%';
+        Math.round((statementScrutinizeCount / maxAttempts) * 100) + '%';
     }
 
     // Update challenge performance

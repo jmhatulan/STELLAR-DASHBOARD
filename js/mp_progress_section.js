@@ -137,14 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (window.parent !== window) {
           const iframeElement = window.parent.document.getElementById('page-progress');
           if (iframeElement) {
-            iframeElement.style.opacity = '0';
-            iframeElement.style.transition = 'opacity 0.5s ease-in-out';
-            setTimeout(() => {
-              iframeElement.src = 'mp_progress_detail.html';
-              iframeElement.onload = function() {
-                setTimeout(() => { iframeElement.style.opacity = '1'; }, 10);
-              };
-            }, 250);
+            iframeElement.src = 'mp_progress_detail.html';
           }
         }
       });
