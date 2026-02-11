@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const chartInstances = {};
 
   // Update page title
-  document.querySelector('h1').textContent = `Student Progress - Grade ${gradeLevel} ${section}`;
+  document.querySelector('h1').textContent = `Grade ${gradeLevel} - ${section}`;
 
   // Fetch students in the class
   async function fetchClassStudents() {

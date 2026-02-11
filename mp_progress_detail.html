@@ -21,6 +21,10 @@
       padding: 5px;
       background: transparent;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .header-row {
@@ -28,6 +32,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
+      flex-shrink: 0;
     }
 
     #back-button {
@@ -48,7 +53,7 @@
 
     h1 {
       margin: 0;
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 600;
       color: #000;
     }
@@ -57,12 +62,15 @@
       display: grid;
       grid-template-columns: 300px 1fr;
       gap: 20px;
+      flex: 1;
+      overflow: hidden;
     }
 
     .left-panel {
       display: flex;
       flex-direction: column;
       gap: 20px;
+      overflow: hidden;
     }
 
     .student-card {
@@ -70,6 +78,7 @@
       border-radius: 12px;
       padding: 20px;
       background: white;
+      flex-shrink: 0;
     }
 
     .student-header {
@@ -143,6 +152,12 @@
       flex-direction: column;
       flex: 1;
       min-height: 350px;
+      max-height: 100%;
+    }
+
+    .student-list-items {
+      overflow-y: auto;
+      flex: 1;
     }
 
     .student-list-header {
@@ -196,6 +211,8 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
       grid-auto-rows: max-content;
+      overflow-y: auto;
+      padding-right: 10px;
     }
 
     .card-engagement {
