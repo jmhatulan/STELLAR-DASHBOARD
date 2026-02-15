@@ -181,13 +181,19 @@ function renderCard(output, gameMode) {
         <div class="section"><strong>${labels.answer}</strong>${answerHTML}</div>
 
         <button class="trash-btn" title="Discard">${getTrashIcon()}</button>
-        <div class="raw-data" style="display:none;" 
-             data-passage="${passage}" 
-             data-question="${questionPart}" 
-             data-answer="${answerPart}"></div>
+        <div class="raw-data" style="display:none;"></div>
     `;
 
     container.appendChild(card);
+    
+    // Store raw data on the element to avoid HTML attribute escaping issues
+    const rawDataElement = card.querySelector(".raw-data");
+    rawDataElement.dataset.rawData = JSON.stringify({
+        passage: passage,
+        question: questionPart,
+        answer: answerPart
+    });
+    
     card.querySelector(".trash-btn").addEventListener("click", () => card.remove());
 }
 
@@ -202,7 +208,8 @@ submitSelectedBtn.addEventListener("click", async () => {
         const checked = card.querySelector(".select-question").checked;
         if (!checked) continue;
 
-        const raw = card.querySelector(".raw-data").dataset;
+        const rawDataElement = card.querySelector(".raw-data");
+        const raw = JSON.parse(rawDataElement.dataset.rawData);
 
         await fetch(`${baseURL}/api/game/create-question`, {
             method: "POST",
