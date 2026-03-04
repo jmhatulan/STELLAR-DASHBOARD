@@ -93,6 +93,9 @@
       border-radius: 8px;
       overflow: hidden;
       background: white;
+      display: flex;
+      flex-direction: column;
+      max-height: 500px;
     }
 
     .leaderboard-header {
@@ -102,11 +105,25 @@
       font-weight: 600;
       color: #333;
       background: #f9f9f9;
+      flex-shrink: 0;
+    }
+
+    .leaderboard-table-wrapper {
+      overflow-y: auto;
+      flex: 1;
     }
 
     .leaderboard-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .leaderboard-table thead {
+      position: sticky;
+      top: 0;
+      background: #f9f9f9;
+      z-index: 10;
     }
 
     .leaderboard-table thead tr {
@@ -116,10 +133,11 @@
 
     .leaderboard-table th {
       padding: 12px 15px;
-      text-align: left;
+      text-align: center;
       font-size: 12px;
       font-weight: 600;
       color: #666;
+      border-bottom: 1px solid #eee;
     }
 
     .leaderboard-table td {
@@ -127,9 +145,14 @@
       border-bottom: 1px solid #eee;
       font-size: 13px;
       color: #333;
+      text-align: center;
     }
 
-    .leaderboard-table tbody tr:last-child td {
+    .leaderboard-table td:nth-child(2) {
+      text-align: left;
+    }
+
+.leaderboard-table tbody tr:last-child td {
       border-bottom: none;
     }
 
@@ -145,12 +168,17 @@
 <body>
   <div class="header">
     <h1>Game Mastery</h1>
-    <select class="dropdown">
-      <option>All Grade</option>
-      <option>Grade 4</option>
-      <option>Grade 5</option>
-      <option>Grade 6</option>
-    </select>
+    <div style="display: flex; gap: 10px;">
+      <select class="dropdown" id="gradeDropdown">
+        <option>All Grade</option>
+        <option>Grade 4</option>
+        <option>Grade 5</option>
+        <option>Grade 6</option>
+      </select>
+      <select class="dropdown" id="sectionDropdown">
+        <option>All Section</option>
+      </select>
+    </div>
   </div>
 
   <div class="cards-container">
@@ -180,12 +208,14 @@
     <!-- Text Extract Leaderboard -->
     <div class="leaderboard">
       <div class="leaderboard-header">Text Extract Leaderboard</div>
-      <table class="leaderboard-table">
+      <div class="leaderboard-table-wrapper">
+        <table class="leaderboard-table">
         <thead>
           <tr>
             <th>Rank</th>
             <th>Name</th>
             <th>Score</th>
+            <th>Perfect Scores</th>
             <th>Date</th>
           </tr>
         </thead>
@@ -195,10 +225,12 @@
             <td>John Dope</td>
             <td></td>
             <td></td>
+            <td></td>
           </tr>
           <tr>
             <td>2</td>
             <td>Jane Doe</td>
+            <td></td>
             <td></td>
             <td></td>
           </tr>
@@ -207,20 +239,24 @@
             <td>John Dope</td>
             <td></td>
             <td></td>
+            <td></td>
           </tr>
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
 
     <!-- Two Truths Leaderboard -->
     <div class="leaderboard">
       <div class="leaderboard-header">Two Truths Leaderboard</div>
-      <table class="leaderboard-table">
+      <div class="leaderboard-table-wrapper">
+        <table class="leaderboard-table">
         <thead>
           <tr>
             <th>Rank</th>
             <th>Name</th>
             <th>Score</th>
+            <th>Perfect Scores</th>
             <th>Date</th>
           </tr>
         </thead>
@@ -230,10 +266,12 @@
             <td>John Dope</td>
             <td></td>
             <td></td>
+            <td></td>
           </tr>
           <tr>
             <td>2</td>
             <td>Jane Doe</td>
+            <td></td>
             <td></td>
             <td></td>
           </tr>
@@ -242,20 +280,24 @@
             <td>John Dope</td>
             <td></td>
             <td></td>
+            <td></td>
           </tr>
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
 
     <!-- Statement Scrutinize Leaderboard -->
     <div class="leaderboard">
       <div class="leaderboard-header">Statement Scrutinize Leaderboard</div>
-      <table class="leaderboard-table">
+      <div class="leaderboard-table-wrapper">
+        <table class="leaderboard-table">
         <thead>
           <tr>
             <th>Rank</th>
             <th>Name</th>
             <th>Score</th>
+            <th>Perfect Scores</th>
             <th>Date</th>
           </tr>
         </thead>
@@ -265,10 +307,12 @@
             <td>John Dope</td>
             <td></td>
             <td></td>
+            <td></td>
           </tr>
           <tr>
             <td>2</td>
             <td>Jane Doe</td>
+            <td></td>
             <td></td>
             <td></td>
           </tr>
@@ -277,9 +321,11 @@
             <td>John Dope</td>
             <td></td>
             <td></td>
+            <td></td>
           </tr>
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   </div>
 
