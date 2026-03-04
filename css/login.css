@@ -8,7 +8,8 @@
 /* LOGIN PAGE STYLES */
 .login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0F172A 0%, #0F172A 100%);
+  background: linear-gradient(135deg, rgba(76, 91, 126, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%),
+    url('../assets/scha.jpg') center/cover no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -36,8 +37,9 @@
 }
 
 .login-logo h1 {
-  font-size: 24px;
+  font-size: 28px;
   color: #0f172a;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   font-weight: bold;
   letter-spacing: 1px;
 }
