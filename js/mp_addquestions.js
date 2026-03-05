@@ -1,43 +1,48 @@
-// =======================
-// VALIDATORS
-// =======================
+document.addEventListener("DOMContentLoaded", function () {
+  // Get the JWT token from localStorage
+  const token = localStorage.getItem('jwtToken') || localStorage.getItem('token');
+  const baseURL = "https://stellar-backend-ki78.onrender.com";
 
-// FORMAT: PASSAGE;QUESTION;ANSWER
-function isTextExtractFormat(input) {
-    if (typeof input !== "string") return false;
-    const regex = /^[^;\n]+;[^;\n]+;[^;\n]+$/;
-    return regex.test(input);
-}
+  if (!token) {
+    console.error('No authentication token found. Please log in first.');
+    document.body.innerHTML = '<p style="color: red; padding: 20px;">Error: Authentication required. Please log in first.</p>';
+    return;
+  }
 
-// FORMAT: PASSAGE;STATEMENT1|STATEMENT2|STATEMENT3;INDEX
-function isTwoTruthsFormat(input) {
-    if (typeof input !== "string") return false;
-    const regex = /^[^;\n]+;[^|\n]+\|[^|\n]+\|[^|\n]+;[0-2]$/;
-    return regex.test(input);
-}
+  // =======================
+  // VALIDATORS
+  // =======================
 
-// FORMAT: PASSAGE;STATEMENT1|STATEMENT2|STATEMENT3;INDEX|EVIDENCE
-function isStatementScrutinizeFormat(input) {
-    if (typeof input !== "string") return false;
-    const regex = /^[^;\n]+;[^|\n]+\|[^|\n]+\|[^|\n]+;[0-2]\|[^;\n]+$/;
-    return regex.test(input);
-}
+  // FORMAT: PASSAGE;QUESTION;ANSWER
+  function isTextExtractFormat(input) {
+      if (typeof input !== "string") return false;
+      const regex = /^[^;\n]+;[^;\n]+;[^;\n]+$/;
+      return regex.test(input);
+  }
 
-// =======================
-// CONFIG
-// =======================
+  // FORMAT: PASSAGE;STATEMENT1|STATEMENT2|STATEMENT3;INDEX
+  function isTwoTruthsFormat(input) {
+      if (typeof input !== "string") return false;
+      const regex = /^[^;\n]+;[^|\n]+\|[^|\n]+\|[^|\n]+;[0-2]$/;
+      return regex.test(input);
+  }
 
-const baseURL = "https://stellar-backend-ki78.onrender.com";
+  // FORMAT: PASSAGE;STATEMENT1|STATEMENT2|STATEMENT3;INDEX|EVIDENCE
+  function isStatementScrutinizeFormat(input) {
+      if (typeof input !== "string") return false;
+      const regex = /^[^;\n]+;[^|\n]+\|[^|\n]+\|[^|\n]+;[0-2]\|[^;\n]+$/;
+      return regex.test(input);
+  }
 
-// =======================
-// ELEMENT REFERENCES
-// =======================
+  // =======================
+  // ELEMENT REFERENCES
+  // =======================
 
-const container = document.getElementById("questionsContainer");
-const generateBtn = document.getElementById("generateBtn");
-const submitSelectedBtn = document.getElementById("submitSelectedBtn");
-const discardSelectedBtn = document.getElementById("discardSelectedBtn");
-const promptInput = document.getElementById("textPrompt");
+  const container = document.getElementById("questionsContainer");
+  const generateBtn = document.getElementById("generateBtn");
+  const submitSelectedBtn = document.getElementById("submitSelectedBtn");
+  const discardSelectedBtn = document.getElementById("discardSelectedBtn");
+  const promptInput = document.getElementById("textPrompt");
 
 // =======================
 // AUTO-EXPAND TEXTAREA
@@ -240,3 +245,5 @@ discardSelectedBtn.addEventListener("click", () => {
         if (checked) card.remove();
     });
 });
+
+}); // End of DOMContentLoaded event listener

@@ -30,6 +30,30 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.setItem('sidebarCollapsed', 'false');
   });
 
+  // ---- LOGOUT HANDLER ----
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Clear all localStorage items related to authentication
+      localStorage.removeItem('jwtToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem('adminUsername');
+      
+      // Clear sessionStorage as well
+      sessionStorage.clear();
+      
+      // Clear all cookies (if any are being used)
+      document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
+      // Redirect to login page
+      window.location.href = 'index.html';
+    });
+  }
+
   // ---- PAGE NAVIGATION ----
   const menuItems = document.querySelectorAll(".menu-item[data-page]");
   const pages = document.querySelectorAll(".page");
