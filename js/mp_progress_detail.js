@@ -102,8 +102,9 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // Calculate days since last login
       let lastLoginText = 'Never logged in';
-      if (student.lastLogin) {
-        const lastLoginDate = new Date(student.lastLogin);
+      if (student.logins && student.logins.length > 0) {
+        const sortedLogins = student.logins.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
+        const lastLoginDate = new Date(sortedLogins[0].loginAt);
         const today = new Date();
         const diffTime = today.getTime() - lastLoginDate.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));

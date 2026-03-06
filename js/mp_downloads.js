@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
         { label: 'Total Grades', value: `${Object.keys(gradeMap).length}` },
         { label: 'Total Sections', value: `${totalSections}` },
         { label: 'Total Students', value: `${totalStudents}` },
-        { label: 'Avg. Story Level', value: `${avgStoryLevelOverall}/75` },
+        { label: 'Avg. Story Level', value: `${formatOverallStoryProgress(avgStoryLevelOverall)}/25` },
         { label: 'Avg. Accuracy', value: `${avgAccuracyOverall}%` }
       ];
 
@@ -186,6 +186,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const sections = gradeMap[grade];
         const gradeAvgStoryLevel = Math.round(sections.reduce((sum, s) => sum + s.avgStoryLevel, 0) / sections.length);
+        const transformedGradeStoryLevel = transformStoryProgress(gradeAvgStoryLevel, grade);
+        const formattedGradeStoryLevel = formatOverallStoryProgress(transformedGradeStoryLevel);
         const gradeAvgAccuracy = Math.round(sections.reduce((sum, s) => sum + s.avgAccuracy, 0) / sections.length);
 
         // Grade header
@@ -197,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Grade stats
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        const statsText = `Avg Story Level: ${gradeAvgStoryLevel}/75  |  Avg Accuracy: ${gradeAvgAccuracy}%  |  Total Sections: ${sections.length}`;
+        const statsText = `Avg Story Level: ${formattedGradeStoryLevel}/25  |  Avg Accuracy: ${gradeAvgAccuracy}%  |  Total Sections: ${sections.length}`;
         doc.text(statsText, margin, yPosition);
         yPosition += 8;
 
@@ -205,7 +207,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const tableData = sections.map(s => [
           s.section,
           s.studentCount,
-          `${s.avgStoryLevel}/75`,
+          `${transformStoryProgress(s.avgStoryLevel, grade)}/25`,
           `${s.avgAccuracy}%`
         ]);
 
@@ -285,35 +287,81 @@ document.addEventListener("DOMContentLoaded", function () {
       const students = await studentsResponse.json();
       console.log('Students fetched:', students);
 
-      // Calculate section averages
-      let totalTextExtract = 0;
-      let totalTwoTruths = 0;
-      let totalStatementScrutinize = 0;
-      let studentCountWithScores = 0;
+      // Calculate metrics for each student and section averages
+      let totalMasteryPoints = 0;
+      let totalChallengePoints = 0;
+      let avgStoryProgress = 0;
 
-      students.forEach(student => {
-        const textExtract = student.gameScores?.textExtract || 0;
-        const twoTruths = student.gameScores?.twoTruths || 0;
-        const statementScrutinize = student.gameScores?.statementScrutinize || 0;
+      // Process each student to calculate their metrics
+      const studentMetrics = students.map((student, index) => {
+        let masteryPoints = 0;
+        let challengePoints = 0;
+        let extractData = { sum: 0, count: 0 };
+        let truthsData = { sum: 0, count: 0 };
+        let scrutinizeData = { sum: 0, count: 0 };
 
-        totalTextExtract += textExtract;
-        totalTwoTruths += twoTruths;
-        totalStatementScrutinize += statementScrutinize;
-        if (textExtract > 0 || twoTruths > 0 || statementScrutinize > 0) {
-          studentCountWithScores++;
+        // Process all attempts for this student
+        if (student.attempts && Array.isArray(student.attempts)) {
+          student.attempts.forEach(attempt => {
+            const attemptScore = attempt.score || 0;
+
+            // Categorize by game type
+            if (isStoryModeGame(attempt.gameID)) {
+              masteryPoints += attemptScore;
+            } else {
+              challengePoints += attemptScore;
+            }
+
+            // Track accuracy metrics by game
+            if (attempt.gameID === 'TEST-01') {
+              extractData.sum += attemptScore;
+              extractData.count++;
+            } else if (attempt.gameID === 'TEST-02') {
+              truthsData.sum += attemptScore;
+              truthsData.count++;
+            } else if (attempt.gameID === 'TEST-03') {
+              scrutinizeData.sum += attemptScore;
+              scrutinizeData.count++;
+            }
+          });
         }
+
+        const storyProgress = student.progress?.storyProgress || 0;
+        const transformedStoryProgress = transformStoryProgress(storyProgress, gradeLevel);
+
+        let lastLogin = 'Never';
+        if (student.logins && Array.isArray(student.logins) && student.logins.length > 0) {
+          const sortedLogins = student.logins.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
+          lastLogin = new Date(sortedLogins[0].loginAt).toLocaleDateString();
+        }
+
+        totalMasteryPoints += masteryPoints;
+        totalChallengePoints += challengePoints;
+        avgStoryProgress += transformedStoryProgress;
+
+        return {
+          index: index + 1,
+          name: student.name,
+          storyProgress: storyProgress,
+          masteryPoints: masteryPoints,
+          challengePoints: challengePoints,
+          extractAccuracy: calculateAccuracy(extractData.sum, extractData.count),
+          truthsAccuracy: calculateAccuracy(truthsData.sum, truthsData.count),
+          scrutinizeAccuracy: calculateAccuracy(scrutinizeData.sum, scrutinizeData.count),
+          lastLogin: lastLogin
+        };
       });
 
-      const avgTextExtract = studentCountWithScores > 0 ? Math.round(totalTextExtract / studentCountWithScores) : 0;
-      const avgTwoTruths = studentCountWithScores > 0 ? Math.round(totalTwoTruths / studentCountWithScores) : 0;
-      const avgStatementScrutinize = studentCountWithScores > 0 ? Math.round(totalStatementScrutinize / studentCountWithScores) : 0;
-      const totalProgress = students.length > 0 ? Math.round(students.reduce((sum, s) => sum + s.storyProgress, 0) / students.length) : 0;
-      const avgExp = students.length > 0 ? Math.round(students.reduce((sum, s) => sum + s.experiencePoints, 0) / students.length) : 0;
+      // Calculate section averages
+      const avgMasteryPoints = students.length > 0 ? Math.round(totalMasteryPoints / students.length) : 0;
+      const avgChallengePoints = students.length > 0 ? Math.round(totalChallengePoints / students.length) : 0;
+      const avgStoryProgressValue = students.length > 0 ? Math.round(avgStoryProgress / students.length) : 0;
+      const transformedAvgStoryProgress = avgStoryProgressValue;
 
       // Create PDF
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({
-        orientation: 'portrait',
+        orientation: 'landscape',
         unit: 'mm',
         format: 'a4'
       });
@@ -338,25 +386,24 @@ document.addEventListener("DOMContentLoaded", function () {
       doc.line(margin, yPosition - 3, margin + contentWidth, yPosition - 3);
       yPosition += 10;
 
-      // Summary stats grid - beautiful card style
-      const statCardWidth = (contentWidth - 16) / 5; // 5 cards with gaps
+      // Summary stats grid
+      const statCardWidth = (contentWidth - 12) / 4; // 4 cards with gaps
       const statCardHeight = 22;
       const stats = [
         { label: 'Total Students', value: `${students.length}` },
-        { label: 'Avg. Story Progress', value: `${totalProgress}/75` },
-        { label: 'Avg. Experience', value: `${avgExp}` },
-        { label: 'Text Extract Avg.', value: `${avgTextExtract}` },
-        { label: 'Two Truths Avg.', value: `${avgTwoTruths}` }
+        { label: 'Avg. Story Progress', value: `${transformedAvgStoryProgress}/25` },
+        { label: 'Avg. Mastery Points', value: `${avgMasteryPoints}` },
+        { label: 'Avg. Challenge Points', value: `${avgChallengePoints}` }
       ];
 
       stats.forEach((stat, index) => {
-        const cardX = margin + index * (statCardWidth + 4);
+        const cardX = margin + index * (statCardWidth + 3);
         
-        // Card background (soft blue-gray)
+        // Card background
         doc.setFillColor(245, 247, 255);
         doc.rect(cardX, yPosition, statCardWidth, statCardHeight, 'F');
         
-        // Left border (indigo)
+        // Left border
         doc.setDrawColor(63, 81, 181);
         doc.setLineWidth(1.5);
         doc.line(cardX, yPosition, cardX, yPosition + statCardHeight);
@@ -367,7 +414,7 @@ document.addEventListener("DOMContentLoaded", function () {
         doc.text(stat.label, cardX + 2, yPosition + 5);
         
         // Value
-        doc.setFontSize(15);
+        doc.setFontSize(14);
         doc.setTextColor(63, 81, 181);
         doc.setFont(undefined, 'bold');
         doc.text(stat.value, cardX + 2, yPosition + 14);
@@ -378,26 +425,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
       yPosition += statCardHeight + 10;
 
-      // Students table
-      const tableData = students.map((student, index) => [
-        index + 1,
-        student.name,
-        student.storyProgress || 0,
-        student.experiencePoints || 0,
-        student.gameScores?.textExtract || 0,
-        student.gameScores?.twoTruths || 0,
-        student.gameScores?.statementScrutinize || 0,
-        student.lastLogin ? new Date(student.lastLogin).toLocaleDateString() : 'Never'
+      // Students table with new columns
+      const tableData = studentMetrics.map(metric => [
+        metric.index,
+        metric.name,
+        `${transformStoryProgress(metric.storyProgress, gradeLevel)}/25`,
+        metric.masteryPoints,
+        metric.challengePoints,
+        metric.extractAccuracy,
+        metric.truthsAccuracy,
+        metric.scrutinizeAccuracy,
+        metric.lastLogin
       ]);
 
       doc.autoTable({
-        head: [['#', 'Name', 'Story', 'Exp', 'Extract', 'Truths', 'Scrutinize', 'Last Login']],
+        head: [['#', 'Student Name', 'Story Progress', 'Mastery Points', 'Challenge Points', 'Extract Accuracy', 'Truths Accuracy', 'Scrutinize Accuracy', 'Last Login']],
         body: tableData,
         startY: yPosition,
         margin: { left: margin, right: margin },
         styles: {
-          fontSize: 8,
-          cellPadding: 3,
+          fontSize: 7,
+          cellPadding: 2,
           textColor: [50, 50, 50],
           lineColor: [255, 255, 255]
         },
@@ -405,7 +453,7 @@ document.addEventListener("DOMContentLoaded", function () {
           backgroundColor: [63, 81, 181],
           textColor: [255, 255, 255],
           fontStyle: 'bold',
-          cellPadding: 4
+          cellPadding: 3
         },
         alternateRowStyles: {
           backgroundColor: [250, 250, 250]
@@ -444,21 +492,24 @@ document.addEventListener("DOMContentLoaded", function () {
     let gradesHTML = '';
     Object.keys(gradeMap).sort((a, b) => a - b).forEach(grade => {
       const sections = gradeMap[grade];
+      const gradeAvgStoryLevel = Math.round(sections.reduce((sum, s) => sum + s.avgStoryLevel, 0) / sections.length);
+      const transformedGradeStoryLevel = transformStoryProgress(gradeAvgStoryLevel, grade);
+      const formattedGradeStoryLevel = formatOverallStoryProgress(transformedGradeStoryLevel);
       const gradeAvgChapters = (sections.reduce((sum, s) => sum + s.avgChapters, 0) / sections.length).toFixed(1);
       const gradeAvgAccuracy = Math.round(sections.reduce((sum, s) => sum + s.avgAccuracy, 0) / sections.length);
 
       gradesHTML += `
-        <div class="grade-section">
-          <h3>Grade ${grade}</h3>
-          <div class="grade-stats">
-            <div class="stat-item">
-              <span class="stat-label">Average Story Level:</span>
-              <span class="stat-value">${gradeAvgStoryLevel}/75</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Average Accuracy:</span>
-              <span class="stat-value">${gradeAvgAccuracy}%</span>
-            </div>
+          <div class="grade-section">
+            <h3>Grade ${grade}</h3>
+            <div class="grade-stats">
+              <div class="stat-item">
+                <span class="stat-label">Average Story Level:</span>
+                <span class="stat-value">${formattedGradeStoryLevel}/25</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Average Accuracy:</span>
+                <span class="stat-value">${gradeAvgAccuracy}%</span>
+              </div>
             <div class="stat-item">
               <span class="stat-label">Total Sections:</span>
               <span class="stat-value">${sections.length}</span>
@@ -479,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <tr>
                   <td>${s.section}</td>
                   <td>${s.studentCount}</td>
-                  <td>${s.avgStoryLevel}/75</td>
+                  <td>${transformStoryProgress(s.avgStoryLevel, grade)}/25</td>
                   <td>${s.avgAccuracy}%</td>
                 </tr>
               `).join('')}
@@ -635,9 +686,29 @@ document.addEventListener("DOMContentLoaded", function () {
     let studentCountWithScores = 0;
 
     students.forEach((student, index) => {
-      const textExtract = student.gameScores?.textExtract || 0;
-      const twoTruths = student.gameScores?.twoTruths || 0;
-      const statementScrutinize = student.gameScores?.statementScrutinize || 0;
+      // Calculate metrics from attempts using new data structure
+      let textExtractSum = 0, textExtractCount = 0;
+      let twoTruthsSum = 0, twoTruthsCount = 0;
+      let scrutinizeSum = 0, scrutinizeCount = 0;
+
+      if (student.attempts && Array.isArray(student.attempts)) {
+        student.attempts.forEach(attempt => {
+          if (attempt.gameID === 'TEST-01') {
+            textExtractSum += attempt.score || 0;
+            textExtractCount++;
+          } else if (attempt.gameID === 'TEST-02') {
+            twoTruthsSum += attempt.score || 0;
+            twoTruthsCount++;
+          } else if (attempt.gameID === 'TEST-03') {
+            scrutinizeSum += attempt.score || 0;
+            scrutinizeCount++;
+          }
+        });
+      }
+
+      const textExtract = textExtractCount > 0 ? Math.round(textExtractSum / textExtractCount) : 0;
+      const twoTruths = twoTruthsCount > 0 ? Math.round(twoTruthsSum / twoTruthsCount) : 0;
+      const statementScrutinize = scrutinizeCount > 0 ? Math.round(scrutinizeSum / scrutinizeCount) : 0;
 
       totalTextExtract += textExtract;
       totalTwoTruths += twoTruths;
@@ -646,16 +717,26 @@ document.addEventListener("DOMContentLoaded", function () {
         studentCountWithScores++;
       }
 
+      // Get last login from logins array
+      let lastLoginStr = 'Never';
+      if (student.logins && Array.isArray(student.logins) && student.logins.length > 0) {
+        const sortedLogins = student.logins.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
+        lastLoginStr = new Date(sortedLogins[0].loginAt).toLocaleDateString();
+      }
+
+      const storyProgress = student.progress?.storyProgress || 0;
+      const transformedStoryProgress = transformStoryProgress(storyProgress, gradeLevel);
+
       studentsHTML += `
         <tr>
           <td>${index + 1}</td>
           <td>${student.name}</td>
-          <td>${student.storyProgress}/75</td>
-          <td>${student.experiencePoints}</td>
+          <td>${transformedStoryProgress}/25</td>
+          <td>${student.progress?.experiencePoints || 0}</td>
           <td>${textExtract}</td>
           <td>${twoTruths}</td>
           <td>${statementScrutinize}</td>
-          <td>${student.lastLogin ? new Date(student.lastLogin).toLocaleDateString() : 'Never'}</td>
+          <td>${lastLoginStr}</td>
         </tr>
       `;
     });
@@ -671,10 +752,11 @@ document.addEventListener("DOMContentLoaded", function () {
       : 0;
 
     const totalProgress = students.length > 0 
-      ? Math.round(students.reduce((sum, s) => sum + s.storyProgress, 0) / students.length)
+      ? Math.round(students.reduce((sum, s) => sum + transformStoryProgress(s.progress?.storyProgress || 0, gradeLevel), 0) / students.length)
       : 0;
+    const formattedTotalProgress = formatOverallStoryProgress(totalProgress);
     const avgExp = students.length > 0
-      ? Math.round(students.reduce((sum, s) => sum + s.experiencePoints, 0) / students.length)
+      ? Math.round(students.reduce((sum, s) => sum + (s.progress?.experiencePoints || 0), 0) / students.length)
       : 0;
 
     return `
@@ -804,7 +886,7 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
           <div class="summary-stat">
             <span class="summary-stat-label">Avg. Story Progress</span>
-            <span class="summary-stat-value">${totalProgress}/75</span>
+            <span class="summary-stat-value">${formattedTotalProgress}/25</span>
           </div>
           <div class="summary-stat">
             <span class="summary-stat-label">Avg. Experience</span>
@@ -875,11 +957,12 @@ document.addEventListener("DOMContentLoaded", function () {
       Object.keys(gradeMap).sort((a, b) => a - b).forEach(grade => {
         Object.keys(gradeMap[grade]).sort().forEach(section => {
           const item = gradeMap[grade][section];
+          const transformedStoryLevel = transformStoryProgress(item.avgStoryLevel || 0, grade);
           const row = [
             grade,
             section,
             item.studentCount || 0,
-            item.avgStoryLevel || 0,
+            `'${transformedStoryLevel}/25`,
             (item.avgAccuracy || 0) + '%'
           ];
           csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
@@ -899,6 +982,39 @@ document.addEventListener("DOMContentLoaded", function () {
       showStatus('status-report1', 'Error generating report. Please try again.', 'error');
     }
   };
+
+  // Helper function to check if gameID is a story mode game (G4W1L1 to G6W5L5)
+  function isStoryModeGame(gameID) {
+    const storyModePattern = /^G[4-6]W[1-5]L[1-5]$/;
+    return storyModePattern.test(gameID);
+  }
+
+  // Helper function to transform story progress based on grade level
+  function transformStoryProgress(value, gradeLevel) {
+    const grade = parseInt(gradeLevel);
+    if (grade === 5) {
+      return Math.max(0, value - 25); // Grade 5: subtract 25
+    } else if (grade === 6) {
+      return Math.max(0, value - 50); // Grade 6: subtract 50
+    }
+    // Grade 4: no transformation
+    return value;
+  }
+
+  // Helper function to format overall story progress as "over X"
+  function formatOverallStoryProgress(value) {
+    if (value >= 15) {
+      return `over ${value}`;
+    }
+    return `${value}`;
+  }
+
+  // Helper function to calculate accuracy percentage
+  function calculateAccuracy(sum, count) {
+    if (count === 0) return '0% (0)';
+    const percentage = Math.round((sum / (count * 500)) * 100);
+    return `${percentage}% (${count})`;
+  }
 
   // Download Section Report as CSV
   window.downloadSectionReportCSV = async function() {
@@ -933,24 +1049,70 @@ document.addEventListener("DOMContentLoaded", function () {
       const students = await studentsResponse.json();
       console.log('Students fetched for CSV:', students);
 
-      // Prepare CSV headers
-      const headers = ['#', 'Student Name', 'Story Progress', 'Experience Points', 'Text Extract', 'Two Truths', 'Statement Scrutinize', 'Last Login'];
+      // Prepare CSV headers with new columns
+      const headers = ['#', 'Student Name', 'Story Progress', 'Mastery Points', 'Challenge Points', 'Extract Accuracy', 'Truths Accuracy', 'Scrutinize Accuracy', 'Last Login'];
       
       // Prepare CSV rows
       let csvContent = headers.join(',') + '\n';
       
       students.forEach((student, index) => {
-        const lastLogin = student.lastLogin ? new Date(student.lastLogin).toLocaleString() : 'N/A';
+        // Calculate metrics from attempts
+        let masteryPoints = 0;
+        let challengePoints = 0;
+        let extractData = { sum: 0, count: 0 };
+        let truthsData = { sum: 0, count: 0 };
+        let scrutinizeData = { sum: 0, count: 0 };
+
+        // Process all attempts for this student
+        if (student.attempts && Array.isArray(student.attempts)) {
+          student.attempts.forEach(attempt => {
+            const attemptScore = attempt.score || 0;
+
+            // Categorize by game type
+            if (isStoryModeGame(attempt.gameID)) {
+              masteryPoints += attemptScore;
+            } else {
+              challengePoints += attemptScore;
+            }
+
+            // Track accuracy metrics by game
+            if (attempt.gameID === 'TEST-01') {
+              extractData.sum += attemptScore;
+              extractData.count++;
+            } else if (attempt.gameID === 'TEST-02') {
+              truthsData.sum += attemptScore;
+              truthsData.count++;
+            } else if (attempt.gameID === 'TEST-03') {
+              scrutinizeData.sum += attemptScore;
+              scrutinizeData.count++;
+            }
+          });
+        }
+
+        // Get story progress
+        const storyProgress = student.progress?.storyProgress || 0;
+        const transformedStoryProgress = transformStoryProgress(storyProgress, gradeLevel);
+
+        // Get last login
+        let lastLogin = 'Never';
+        if (student.logins && Array.isArray(student.logins) && student.logins.length > 0) {
+          const sortedLogins = student.logins.sort((a, b) => new Date(b.loginAt) - new Date(a.loginAt));
+          lastLogin = new Date(sortedLogins[0].loginAt).toLocaleString();
+        }
+
+        // Build the row with all calculated metrics
         const row = [
           index + 1,
           student.name,
-          student.storyProgress || 0,
-          student.experiencePoints || 0,
-          student.gameScores?.textExtract || 0,
-          student.gameScores?.twoTruths || 0,
-          student.gameScores?.statementScrutinize || 0,
+          `'${transformedStoryProgress}/25`,
+          masteryPoints,
+          challengePoints,
+          calculateAccuracy(extractData.sum, extractData.count),
+          calculateAccuracy(truthsData.sum, truthsData.count),
+          calculateAccuracy(scrutinizeData.sum, scrutinizeData.count),
           lastLogin
         ];
+
         csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
       });
 
