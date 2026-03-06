@@ -13,6 +13,24 @@ document.addEventListener("DOMContentLoaded", function () {
   let engagementChart = null;
   const chartInstances = {};
 
+  // Helper functions for story progress transformation
+  function transformStoryProgress(value, gradeLevel) {
+    const grade = parseInt(gradeLevel);
+    if (grade === 5) {
+      return Math.max(0, value - 25);
+    } else if (grade === 6) {
+      return Math.max(0, value - 50);
+    }
+    return value;
+  }
+
+  function formatOverallStoryProgress(value) {
+    if (value >= 15) {
+      return `over ${value}`;
+    }
+    return `${value}`;
+  }
+
   // DOM Elements
   const gradesColumn = document.getElementById('gradesColumn');
 
@@ -65,7 +83,11 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log('Progress data retrieved:', progressData);
 
       initializeCharts(overviewData);
-      updateProgressBars(overviewData);
+      let selectedGrade = null;
+      if (gradeLevel && gradeLevel !== 'All Grade') {
+        selectedGrade = parseInt(gradeLevel.replace('Grade ', ''));
+      }
+      updateProgressBars(overviewData, selectedGrade);
       updateChallengeAttempts(challengeData);
       displayGradeView(progressData);
     } catch (error) {
@@ -96,7 +118,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const cardIndex = index + 1;
 
       // Calculate grade-level averages
-      const avgStoryLevel = (sectionsList.reduce((sum, s) => sum + s.avgStoryLevel, 0) / sectionsList.length);
+      const avgStoryLevel = Math.round(sectionsList.reduce((sum, s) => sum + transformStoryProgress(s.avgStoryLevel, gradeLevel), 0) / sectionsList.length);
+      const formattedAvgStoryLevel = formatOverallStoryProgress(avgStoryLevel);
       const avgAccuracy = (sectionsList.reduce((sum, s) => sum + s.avgAccuracy, 0) / sectionsList.length);
       const avgActivityData = [];
       if (sectionsList[0] && sectionsList[0].activityLabels) {
@@ -112,11 +135,11 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="progress-card-header">Grade ${gradeLevel}</div>
         <div class="card-content">
           <div class="progress-section">
-            <div class="progress-info">Average Story Level ${avgStoryLevel.toFixed(1)}/75</div>
+            <div class="progress-info">Average Story Level ${formattedAvgStoryLevel}/25</div>
               <div class="progress-bar">
-              <div class="progress-fill" style="width: ${(avgStoryLevel / 75) * 100}%;"></div>
+              <div class="progress-fill" style="width: ${(avgStoryLevel / 25) * 100}%;"></div>
               </div>
-            <div class="progress-percentage">${Math.round((avgStoryLevel / 75) * 100)}%</div>
+            <div class="progress-percentage">${Math.round((avgStoryLevel / 25) * 100)}%</div>
           </div>
           <div class="charts-section">
             <div class="left-section">
@@ -336,17 +359,32 @@ document.addEventListener("DOMContentLoaded", function () {
     if (stmtFill) stmtFill.style.width = Math.round((stmt / max) * 100) + '%';
   }
 
-  function updateProgressBars(data) {
+  function updateProgressBars(data, selectedGrade = null) {
     // Update Story Progress
     const progressFill = document.querySelector('.progress-fill');
     const progressLabel = document.querySelector('.progress-label');
 
     if (progressFill && data.storyProgressAverage !== undefined) {
-      const percentage = Math.min(data.storyProgressAverage, 100);
-      progressFill.style.width = percentage + '%';
+      let displayValue = data.storyProgressAverage;
       
-      if (progressLabel) {
-        progressLabel.textContent = percentage + '%';
+      // Apply transformation if a specific grade is selected
+      if (selectedGrade) {
+        displayValue = transformStoryProgress(displayValue, selectedGrade);
+        // Convert to percentage based on /25 instead of /75
+        const percentage = Math.min((displayValue / 25) * 100, 100);
+        progressFill.style.width = percentage + '%';
+        
+        if (progressLabel) {
+          progressLabel.textContent = Math.round(percentage) + '%';
+        }
+      } else {
+        // Show as percentage of 75 for overall
+        const percentage = Math.min(displayValue, 100);
+        progressFill.style.width = percentage + '%';
+        
+        if (progressLabel) {
+          progressLabel.textContent = percentage + '%';
+        }
       }
     }
 
@@ -437,7 +475,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log('Using sample data due to API error');
     initializeCharts(sampleOverviewData);
-    updateProgressBars(sampleOverviewData);
+    updateProgressBars(sampleOverviewData, null);
     updateChallengeAttempts(sampleChallengeData);
     displayGradeView(sampleProgressData);
   }

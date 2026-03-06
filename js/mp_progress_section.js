@@ -20,6 +20,24 @@ document.addEventListener("DOMContentLoaded", function () {
   // Store chart instances to destroy them before creating new ones
   const chartInstances = {};
   
+  // Helper functions for story progress transformation
+  function transformStoryProgress(value, gradeLevel) {
+    const grade = parseInt(gradeLevel);
+    if (grade === 5) {
+      return Math.max(0, value - 25);
+    } else if (grade === 6) {
+      return Math.max(0, value - 50);
+    }
+    return value;
+  }
+
+  function formatOverallStoryProgress(value) {
+    if (value >= 15) {
+      return `over ${value}`;
+    }
+    return `${value}`;
+  }
+  
   // DOM Elements
   const gridContainer = document.getElementById('gridContainer');
   const pageTitle = document.getElementById('pageTitle');
@@ -96,6 +114,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     sectionsData.forEach((classData, index) => {
       const cardIndex = index + 1;
+      const transformedStoryLevel = transformStoryProgress(classData.avgStoryLevel, selectedGrade);
+      const formattedStoryLevel = formatOverallStoryProgress(transformedStoryLevel);
       
       const card = document.createElement('div');
       card.className = 'progress-card';
@@ -103,11 +123,11 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="progress-card-header">Section ${classData.section}</div>
         <div class="card-content">
           <div class="progress-section">
-            <div class="progress-info">Average Story Level ${classData.avgStoryLevel}/75</div>
+            <div class="progress-info">Average Story Level ${formattedStoryLevel}/25</div>
               <div class="progress-bar">
-              <div class="progress-fill" style="width: ${(classData.avgStoryLevel / 75) * 100}%;"></div>
+              <div class="progress-fill" style="width: ${(transformedStoryLevel / 25) * 100}%;"></div>
               </div>
-            <div class="progress-percentage">${Math.round((classData.avgStoryLevel / 75) * 100)}%</div>
+            <div class="progress-percentage">${Math.round((transformedStoryLevel / 25) * 100)}%</div>
           </div>
           <div class="charts-section">
             <div class="left-section">
