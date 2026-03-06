@@ -858,7 +858,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Prepare CSV headers
-      const headers = ['Grade Level', 'Section', 'Total Students', 'Average Story Progress', 'Average Experience', 'Engagement Rate'];
+      const headers = ['Grade Level', 'Section', 'Total Students', 'Average Story Level', 'Average Accuracy'];
       
       // Group by grade and section
       const gradeMap = {};
@@ -878,10 +878,9 @@ document.addEventListener("DOMContentLoaded", function () {
           const row = [
             grade,
             section,
-            item.totalStudents || 0,
-            item.averageStoryProgress || 0,
-            item.averageExperience || 0,
-            ((item.engagementRate || 0) * 100).toFixed(2) + '%'
+            item.studentCount || 0,
+            item.avgStoryLevel || 0,
+            (item.avgAccuracy || 0) + '%'
           ];
           csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
         });
@@ -947,9 +946,9 @@ document.addEventListener("DOMContentLoaded", function () {
           student.name,
           student.storyProgress || 0,
           student.experiencePoints || 0,
-          student.textExtractScore || 0,
-          student.twoTruthsScore || 0,
-          student.statementScrutinizeScore || 0,
+          student.gameScores?.textExtract || 0,
+          student.gameScores?.twoTruths || 0,
+          student.gameScores?.statementScrutinize || 0,
           lastLogin
         ];
         csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
