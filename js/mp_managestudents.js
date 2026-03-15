@@ -6,6 +6,8 @@ const sectionsMap = {
     "6": ["Excellence", "Perseverance"]
 };
 
+let uploadedData = [];
+
 function updateSections(gradeId, sectionId) {
     const grade = document.getElementById(gradeId).value;
     const sectionSelect = document.getElementById(sectionId);
@@ -32,171 +34,212 @@ const notify = (msg, isErr = false) => {
     panel.textContent = msg;
     panel.className = isErr ? 'status-panel error' : 'status-panel success';
     panel.style.display = 'block';
-    setTimeout(() => { panel.style.display = 'none'; }, 4000);
+    setTimeout(() => { panel.style.display = 'none'; }, 5000);
 };
 
-async function onView() {
-    const grade = document.getElementById('grade').value;
-    const section = document.getElementById('section').value;
-    if (!grade || !section) return notify('Please select grade and section.', true);
-    try {
-        const response = await fetch(`${BASE_URL}/class/view?grade=${grade}&section=${encodeURIComponent(section)}`, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
+// --- BATCH REGISTER ---
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        uploadedData = json.map(row => {
+            const norm = {};
+            Object.keys(row).forEach(k => norm[k.toLowerCase().trim()] = row[k]);
+            return norm;
         });
-        const data = await response.json();
-        if (response.ok) {
-            renderStudents(data.students);
-        } else {
-            notify(data.message, true);
-        }
-    } catch (err) {
-        notify('Server connection failed.', true);
-    }
+        renderPreview();
+    };
+    reader.readAsArrayBuffer(file);
 }
 
-function renderStudents(students) {
-    const display = document.getElementById('studentDisplay');
-    const tbody = document.getElementById('studentRows');
+function renderPreview() {
+    const tbody = document.getElementById('previewRows');
     tbody.innerHTML = '';
-    if (!students || students.length === 0) {
-        display.style.display = 'none';
-        return notify('No students found.', true);
-    }
-    students.forEach((s, index) => {
-        const row = document.createElement('tr');
-        row.id = `row-${index}`;
-        row.innerHTML = `
-            <td>${s.name}</td>
-            <td>${s.gender}</td>
-            <td>
-                <span class="row-text" id="user-text-${index}">${s.username || 'N/A'}</span>
-                <input type="text" class="row-input" value="${s.username || ''}" id="user-input-${index}" data-old="${s.username || ''}">
-            </td>
-            <td>
-                <span class="row-text" id="pass-text-${index}">********</span>
-                <input type="password" class="row-input" placeholder="New Password" id="pass-input-${index}">
-            </td>
-            <td>
-                <button class="btn-edit" id="btn-edit-${index}" onclick="toggleEdit(${index}, true)">⚙</button>
-                <div style="display: flex; gap: 5px;">
-                    <button class="btn-save" id="btn-save-${index}" onclick="onSaveCredentials(${index})">Save</button>
-                    <button class="btn-cancel" id="btn-cancel-${index}" onclick="toggleEdit(${index}, false)">Cancel</button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(row);
+    uploadedData.forEach(item => {
+        tbody.innerHTML += `<tr><td>${item.name || ''}</td><td>${item.gender || ''}</td><td>${item.username || ''}</td><td>${item.password || ''}</td></tr>`;
     });
-    display.style.display = 'block';
+    document.getElementById('previewContainer').style.display = 'block';
 }
 
-function toggleEdit(index, isEditing) {
-    const userText = document.getElementById(`user-text-${index}`);
-    const userInput = document.getElementById(`user-input-${index}`);
-    const passText = document.getElementById(`pass-text-${index}`);
-    const passInput = document.getElementById(`pass-input-${index}`);
-    const editBtn = document.getElementById(`btn-edit-${index}`);
-    const saveBtn = document.getElementById(`btn-save-${index}`);
-    const cancelBtn = document.getElementById(`btn-cancel-${index}`);
+function clearPreview() {
+    uploadedData = [];
+    document.getElementById('previewContainer').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+}
 
-    userText.style.display = isEditing ? 'none' : 'inline';
-    userInput.style.display = isEditing ? 'block' : 'none';
-    passText.style.display = isEditing ? 'none' : 'inline';
-    passInput.style.display = isEditing ? 'block' : 'none';
+async function onConfirmRegistration() {
+    const grade = document.getElementById('grade').value;
+    const section = document.getElementById('section').value;
 
-    editBtn.style.display = isEditing ? 'none' : 'inline-block';
-    saveBtn.style.display = isEditing ? 'inline-block' : 'none';
-    cancelBtn.style.display = isEditing ? 'inline-block' : 'none';
-
-    if (!isEditing) {
-        userInput.value = userInput.getAttribute('data-old');
-        passInput.value = '';
+    if (!grade || !section) {
+        return notify("Select target Grade and Section in 'Search & Controls' first.", true);
     }
-}
 
-async function onSaveCredentials(index) {
-    const userInput = document.getElementById(`user-input-${index}`);
-    const passInput = document.getElementById(`pass-input-${index}`);
-    const oldUsername = userInput.getAttribute('data-old');
-    const newUsername = userInput.value.trim();
-    const newPassword = passInput.value.trim();
+    if (uploadedData.length === 0) return notify("No data to upload.", true);
 
-    if (!oldUsername) return notify("Error: No identifier found.", true);
+    const users = uploadedData.map(u => ({
+        name: u.name,
+        gender: u.gender,
+        username: String(u.username),
+        password: String(u.password),
+        gradeLevel: Number(grade),
+        section: section
+    }));
 
     try {
-        const response = await fetch(`${BASE_URL}/student/credentials`, {
-            method: 'PATCH',
+        notify("Uploading students...");
+        const response = await fetch(`${BASE_URL}/class/create`, {
+            method: 'POST', // Updated to POST
             headers: getHeaders(),
-            body: JSON.stringify({
-                username: oldUsername,
-                newUsername: newUsername !== oldUsername ? newUsername : undefined,
-                newPassword: newPassword || undefined
-            })
+            body: JSON.stringify({ users }) // Data sent in body
         });
 
         const data = await response.json();
         if (response.ok) {
-            notify("Credentials updated.");
-            userInput.setAttribute('data-old', newUsername);
-            document.getElementById(`user-text-${index}`).textContent = newUsername;
-            toggleEdit(index, false);
+            notify(`Successfully registered ${data.usersCreated} students.`);
+            clearPreview();
+            onView(); // Refresh the list
         } else {
-            notify(data.message, true);
+            notify(data.message || "Registration failed.", true);
         }
-    } catch (err) {
-        notify("Failed to update.", true);
+    } catch (e) {
+        notify("Server error during registration.", true);
     }
 }
 
-async function onArchive() {
-    const grade = document.getElementById('grade').value;
-    const section = document.getElementById('section').value;
-    if (!grade || !section) return notify('Select Grade and Section.', true);
-    try {
-        const response = await fetch(`${BASE_URL}/class/archive?grade=${grade}&section=${encodeURIComponent(section)}`, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
-        });
-        if (!response.ok) throw new Error('Archive failed');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Archive_Grade${grade}_${section}.zip`;
-        a.click();
-        notify('Archive downloaded.');
-    } catch (err) { notify(err.message, true); }
-}
-
+// --- MIGRATION ---
 async function onUpdate() {
     const prevGrade = document.getElementById('grade').value;
     const prevSection = document.getElementById('section').value;
     const newGrade = document.getElementById('newGrade').value;
     const newSection = document.getElementById('newSection').value;
-    if (!prevGrade || !prevSection || !newGrade || !newSection) return notify('All fields required.', true);
-    const params = new URLSearchParams({ prevGrade, prevSection, newGrade, newSection });
+
+    if (!prevGrade || !prevSection || !newGrade || !newSection) return notify("Select current class and target class.", true);
+
     try {
-        const response = await fetch(`${BASE_URL}/class/update?${params.toString()}`, {
+        const response = await fetch(`${BASE_URL}/class/update?prevGrade=${prevGrade}&prevSection=${encodeURIComponent(prevSection)}&newGrade=${newGrade}&newSection=${encodeURIComponent(newSection)}`, {
             method: 'PATCH',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
+            headers: getHeaders()
         });
-        const data = await response.json();
-        if (response.ok) { notify(data.message); onView(); }
-        else { notify(data.message, true); }
-    } catch (err) { notify('Update failed.', true); }
+        if (response.ok) {
+            notify("Students migrated successfully.");
+            document.getElementById('grade').value = newGrade;
+            updateSections('grade', 'section');
+            document.getElementById('section').value = newSection;
+            onView();
+        } else {
+            const d = await response.json(); notify(d.message, true);
+        }
+    } catch (e) { notify("Migration failed.", true); }
 }
 
-async function onDelete() {
-    const grade = document.getElementById('grade').value;
-    const section = document.getElementById('section').value;
-    if (!grade || !section || !confirm('Permanently delete this class?')) return;
+// --- ROSTER & CREDENTIALS ---
+async function onView() {
+    const g = document.getElementById('grade').value;
+    const s = document.getElementById('section').value;
+    if (!g || !s) return notify("Select Grade and Section.", true);
     try {
-        const response = await fetch(`${BASE_URL}/class/delete?grade=${grade}&section=${encodeURIComponent(section)}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` }
+        const res = await fetch(`${BASE_URL}/class/view?grade=${g}&section=${encodeURIComponent(s)}`, { headers: getHeaders() });
+        const d = await res.json();
+        if (res.ok) renderStudents(d.students);
+    } catch (e) { notify("Failed to load roster.", true); }
+}
+
+function renderStudents(students) {
+    const tbody = document.getElementById('studentRows');
+    tbody.innerHTML = '';
+    students.forEach((s, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${s.name}</td>
+            <td>${s.gender}</td>
+            <td>
+                <span id="u-txt-${i}">${s.username || ''}</span>
+                <input type="text" class="row-input" value="${s.username || ''}" id="u-in-${i}" data-old="${s.username || ''}">
+            </td>
+            <td>
+                <span id="p-txt-${i}">********</span>
+                <input type="password" class="row-input" placeholder="New Password" id="p-in-${i}">
+            </td>
+            <td>
+                <button class="btn-edit-icon" id="e-btn-${i}" onclick="toggleEdit(${i}, true)">✎</button>
+                <div id="ctrl-${i}" style="display:none; gap:5px;">
+                    <button class="btn-save" onclick="onSaveCredentials(${i})">Save</button>
+                    <button class="btn-cancel" onclick="toggleEdit(${i}, false)">Cancel</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+    document.getElementById('studentDisplay').style.display = 'block';
+}
+
+function toggleEdit(i, editing) {
+    document.getElementById(`u-txt-${i}`).style.display = editing ? 'none' : 'inline';
+    document.getElementById(`u-in-${i}`).style.display = editing ? 'block' : 'none';
+    document.getElementById(`p-txt-${i}`).style.display = editing ? 'none' : 'inline';
+    document.getElementById(`p-in-${i}`).style.display = editing ? 'block' : 'none';
+    document.getElementById(`e-btn-${i}`).style.display = editing ? 'none' : 'inline-block';
+    document.getElementById(`ctrl-${i}`).style.display = editing ? 'flex' : 'none';
+
+    if (!editing) {
+        // Reset values on cancel
+        const input = document.getElementById(`u-in-${i}`);
+        input.value = input.getAttribute('data-old');
+        document.getElementById(`p-in-${i}`).value = '';
+    }
+}
+
+async function onSaveCredentials(i) {
+    const uIn = document.getElementById(`u-in-${i}`);
+    const pIn = document.getElementById(`p-in-${i}`);
+    const old = uIn.getAttribute('data-old');
+
+    try {
+        const res = await fetch(`${BASE_URL}/student/credentials`, {
+            method: 'PATCH',
+            headers: getHeaders(),
+            body: JSON.stringify({
+                username: old,
+                newUsername: uIn.value !== old ? uIn.value : undefined,
+                newPassword: pIn.value || undefined
+            })
         });
-        const data = await response.json();
-        if (response.ok) { notify('Class deleted.'); document.getElementById('studentDisplay').style.display = 'none'; }
-        else { notify(data.message, true); }
-    } catch (err) { notify('Delete failed.', true); }
+        if (res.ok) {
+            notify("Saved.");
+            uIn.setAttribute('data-old', uIn.value);
+            document.getElementById(`u-txt-${i}`).textContent = uIn.value;
+            toggleEdit(i, false);
+        } else {
+            const d = await res.json(); notify(d.message, true);
+        }
+    } catch (e) { notify("Save failed.", true); }
+}
+
+// --- DELETE / ARCHIVE ---
+async function onDelete() {
+    const g = document.getElementById('grade').value;
+    const s = document.getElementById('section').value;
+    if (!g || !s || !confirm("Delete class?")) return;
+    try {
+        const res = await fetch(`${BASE_URL}/class/delete?grade=${g}&section=${encodeURIComponent(s)}`, { method: 'DELETE', headers: getHeaders() });
+        if (res.ok) { notify("Deleted."); document.getElementById('studentDisplay').style.display = 'none'; }
+    } catch (e) { notify("Delete failed.", true); }
+}
+
+async function onArchive() {
+    const g = document.getElementById('grade').value;
+    const s = document.getElementById('section').value;
+    if (!g || !s) return notify("Select class.", true);
+    try {
+        const res = await fetch(`${BASE_URL}/class/archive?grade=${g}&section=${encodeURIComponent(s)}`, { headers: getHeaders() });
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `Archive_G${g}_${s}.zip`; a.click();
+    } catch (e) { notify("Archive failed.", true); }
 }
