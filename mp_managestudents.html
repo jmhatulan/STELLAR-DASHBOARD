@@ -2,17 +2,202 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manage Students</title>
-
-    <link rel="stylesheet" href="css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students - Administration</title>
     <style>
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-size: 20px;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+            padding: 50px;
+        }
+
+        .admin-wrapper {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 50px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+            border: 1px solid #e2e8f0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #334155;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .field-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #475569;
+        }
+
+        input {
+            padding: 20px;
+            font-size: 1.25rem;
+            border: 3px solid #cbd5e1;
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 20px 40px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-archive {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-update {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .status-panel {
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            display: none;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 2px solid #fca5a5;
+            display: block;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 2px solid #86efac;
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 25px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 800;
+        }
     </style>
 </head>
 
 <body>
-    <h1>Manage Students</h1>
+    <div class="admin-wrapper">
+        <h1>Student Management Portal</h1>
+        <div id="notice" class="status-panel"></div>
+
+        <section class="card">
+            <h2>Search & Actions</h2>
+            <div class="input-grid">
+                <div class="field-box">
+                    <label>Grade Level</label>
+                    <input type="number" id="grade" placeholder="e.g., 10">
+                </div>
+                <div class="field-box">
+                    <label>Section Name</label>
+                    <input type="text" id="section" placeholder="e.g., Diamond">
+                </div>
+            </div>
+            <div class="actions-bar">
+                <button class="btn-view" onclick="onView()">View Students</button>
+                <button class="btn-archive" onclick="onArchive()">Archive to CSV</button>
+                <button class="btn-delete" onclick="onDelete()">Delete Class</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Migration Tools</h2>
+            <div class="input-grid">
+                <div class="field-box">
+                    <label>New Grade</label>
+                    <input type="number" id="newGrade">
+                </div>
+                <div class="field-box">
+                    <label>New Section</label>
+                    <input type="text" id="newSection">
+                </div>
+            </div>
+            <button class="btn-update" onclick="onUpdate()">Move Students</button>
+        </section>
+
+        <section class="card" id="studentDisplay" style="display: none;">
+            <h2>Student Roster</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Gender</th>
+                    </tr>
+                </thead>
+                <tbody id="studentRows"></tbody>
+            </table>
+        </section>
+    </div>
     <script src="js/mp_managestudents.js"></script>
 </body>
 
