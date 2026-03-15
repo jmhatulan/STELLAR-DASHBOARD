@@ -1,7 +1,6 @@
 const BASE_URL = 'https://stellar-backend-ki78.onrender.com/api/admin';
 
 const getHeaders = () => ({
-    'Content-Type': 'application/json',
     'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
 });
 
@@ -20,10 +19,9 @@ async function onView() {
     if (!grade || !section) return notify('Please enter grade and section.', true);
 
     try {
-        const response = await fetch(`${BASE_URL}/class/view`, {
+        const response = await fetch(`${BASE_URL}/class/view?grade=${grade}&section=${encodeURIComponent(section)}`, {
             method: 'GET',
-            headers: getHeaders(),
-            body: JSON.stringify({ grade: Number(grade), section })
+            headers: getHeaders()
         });
 
         const data = await response.json();
@@ -41,11 +39,12 @@ async function onArchive() {
     const grade = document.getElementById('grade').value;
     const section = document.getElementById('section').value;
 
+    if (!grade || !section) return notify('Grade and section required.', true);
+
     try {
-        const response = await fetch(`${BASE_URL}/class/view-all`, {
+        const response = await fetch(`${BASE_URL}/class/view-all?grade=${grade}&section=${encodeURIComponent(section)}`, {
             method: 'GET',
-            headers: getHeaders(),
-            body: JSON.stringify({ grade: Number(grade), section })
+            headers: getHeaders()
         });
 
         const data = await response.json();
@@ -60,18 +59,26 @@ async function onArchive() {
 }
 
 async function onUpdate() {
-    const payload = {
-        prevGrade: Number(document.getElementById('grade').value),
-        prevSection: document.getElementById('section').value,
-        newGrade: Number(document.getElementById('newGrade').value),
-        newSection: document.getElementById('newSection').value
-    };
+    const prevGrade = document.getElementById('grade').value;
+    const prevSection = document.getElementById('section').value;
+    const newGrade = document.getElementById('newGrade').value;
+    const newSection = document.getElementById('newSection').value;
+
+    if (!prevGrade || !prevSection || !newGrade || !newSection) {
+        return notify('All fields are required.', true);
+    }
+
+    const params = new URLSearchParams({
+        prevGrade,
+        prevSection,
+        newGrade,
+        newSection
+    });
 
     try {
-        const response = await fetch(`${BASE_URL}/class/update`, {
+        const response = await fetch(`${BASE_URL}/class/update?${params.toString()}`, {
             method: 'PATCH',
-            headers: getHeaders(),
-            body: JSON.stringify(payload)
+            headers: getHeaders()
         });
 
         const data = await response.json();
@@ -90,13 +97,13 @@ async function onDelete() {
     const grade = document.getElementById('grade').value;
     const section = document.getElementById('section').value;
 
+    if (!grade || !section) return;
     if (!confirm('Permanently delete this class?')) return;
 
     try {
-        const response = await fetch(`${BASE_URL}/class/delete`, {
+        const response = await fetch(`${BASE_URL}/class/delete?grade=${grade}&section=${encodeURIComponent(section)}`, {
             method: 'DELETE',
-            headers: getHeaders(),
-            body: JSON.stringify({ grade: Number(grade), section })
+            headers: getHeaders()
         });
 
         const data = await response.json();
@@ -129,7 +136,7 @@ function renderStudents(students) {
 
 function downloadCSV(students, filename) {
     const headers = ["UserID", "Name", "Gender", "XP"];
-    const rows = students.map(s => [s.userID, s.name, s.gender, s.progress?.experiencePoints || 0]);
+    const rows = students.map(s => [s.userID, `"${s.name}"`, s.gender, s.progress?.experiencePoints || 0]);
     const content = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const blob = new Blob([content], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -137,4 +144,5 @@ function downloadCSV(students, filename) {
     a.href = url;
     a.download = filename;
     a.click();
+    URL.revokeObjectURL(url);
 }
