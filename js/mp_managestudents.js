@@ -1,5 +1,29 @@
 const BASE_URL = 'https://stellar-backend-ki78.onrender.com/api/admin';
 
+const sectionsMap = {
+    "4": ["Humanity", "Sincerity"],
+    "5": ["Efficient", "Obedient"],
+    "6": ["Excellence", "Perseverance"]
+};
+
+function updateSections(gradeId, sectionId) {
+    const grade = document.getElementById(gradeId).value;
+    const sectionSelect = document.getElementById(sectionId);
+
+    sectionSelect.innerHTML = '<option value="">Select Section</option>';
+
+    if (grade && sectionsMap[grade]) {
+        sectionsMap[grade].forEach(sec => {
+            const opt = document.createElement('option');
+            opt.value = sec;
+            opt.textContent = sec;
+            sectionSelect.appendChild(opt);
+        });
+    } else {
+        sectionSelect.innerHTML = '<option value="">Select Grade First</option>';
+    }
+}
+
 const getHeaders = () => ({
     'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
 });
@@ -16,7 +40,7 @@ async function onView() {
     const grade = document.getElementById('grade').value;
     const section = document.getElementById('section').value;
 
-    if (!grade || !section) return notify('Please enter grade and section.', true);
+    if (!grade || !section) return notify('Please select grade and section.', true);
 
     try {
         const response = await fetch(`${BASE_URL}/class/view?grade=${grade}&section=${encodeURIComponent(section)}`, {
@@ -39,11 +63,10 @@ async function onArchive() {
     const grade = document.getElementById('grade').value;
     const section = document.getElementById('section').value;
 
-    if (!grade || !section) return notify('Enter Grade and Section to archive.', true);
+    if (!grade || !section) return notify('Select Grade and Section to archive.', true);
 
     try {
-        notify(`Preparing archive for Grade ${grade} - ${section}...`);
-
+        notify(`Preparing archive...`);
         const response = await fetch(`${BASE_URL}/class/archive?grade=${grade}&section=${encodeURIComponent(section)}`, {
             method: 'GET',
             headers: getHeaders()
@@ -61,10 +84,9 @@ async function onArchive() {
         a.download = `Archive_Grade${grade}_${section}.zip`;
         document.body.appendChild(a);
         a.click();
-
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        notify('Class archive downloaded.');
+        notify('Archive downloaded.');
     } catch (err) {
         notify(err.message, true);
     }
@@ -76,18 +98,14 @@ async function onUpdate() {
     const newGrade = document.getElementById('newGrade').value;
     const newSection = document.getElementById('newSection').value;
 
-    if (!prevGrade || !prevSection || !newGrade || !newSection) {
-        return notify('All fields are required.', true);
-    }
+    if (!prevGrade || !prevSection || !newGrade || !newSection) return notify('All fields required.', true);
 
     const params = new URLSearchParams({ prevGrade, prevSection, newGrade, newSection });
-
     try {
         const response = await fetch(`${BASE_URL}/class/update?${params.toString()}`, {
             method: 'PATCH',
             headers: getHeaders()
         });
-
         const data = await response.json();
         if (response.ok) {
             notify(data.message);
@@ -103,16 +121,14 @@ async function onUpdate() {
 async function onDelete() {
     const grade = document.getElementById('grade').value;
     const section = document.getElementById('section').value;
-
-    if (!grade || !section) return notify('Grade and section required.', true);
-    if (!confirm('Permanently delete this class? This will delete all student records, credentials, and progress.')) return;
+    if (!grade || !section) return;
+    if (!confirm('Permanently delete this class?')) return;
 
     try {
         const response = await fetch(`${BASE_URL}/class/delete?grade=${grade}&section=${encodeURIComponent(section)}`, {
             method: 'DELETE',
             headers: getHeaders()
         });
-
         const data = await response.json();
         if (response.ok) {
             notify('Class deleted successfully.');
@@ -129,12 +145,10 @@ function renderStudents(students) {
     const display = document.getElementById('studentDisplay');
     const tbody = document.getElementById('studentRows');
     tbody.innerHTML = '';
-
     if (!students || students.length === 0) {
         display.style.display = 'none';
         return notify('No students found.', true);
     }
-
     students.forEach(s => {
         tbody.innerHTML += `<tr><td>${s.name}</td><td>${s.gender}</td></tr>`;
     });
