@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -29,11 +30,13 @@
         <a href="#" class="menu-item active" data-page="overview">Overview</a>
         <a href="#" class="menu-item" data-page="gamemastery">Game Mastery</a>
 
-        <hr class="divider" /> 
+        <hr class="divider" />
         <a href="#" class="menu-item" data-page="addquestions">Add Questions</a>
 
         <hr class="divider" />
 
+        <a href="#" class="menu-item" data-page="managestudents">Manage Students</a>
+        <hr class="divider" />
         <a href="#" class="menu-item" data-page="downloads">⬇ Download Report</a>
         <a href="#" class="menu-item logout" id="logoutBtn">🚪 Logout</a>
       </nav>
@@ -41,25 +44,34 @@
 
     <!-- MAIN CONTENT -->
     <main class="content">
-      
+
       <!-- OVERVIEW PAGE -->
-      <iframe id="page-overview" class="page" style="border: none; width: 100%; height: 100%;" src="mp_overview.html"></iframe>
+      <iframe id="page-overview" class="page" style="border: none; width: 100%; height: 100%;"
+        src="mp_overview.html"></iframe>
 
       <!-- PROGRESS SECTION PAGE -->
-      <iframe id="page-progress" class="page" style="display: none; border: none; width: 100%; height: 100%;" src="mp_progress_section.html"></iframe>
+      <iframe id="page-progress" class="page" style="display: none; border: none; width: 100%; height: 100%;"
+        src="mp_progress_section.html"></iframe>
 
       <!-- GAME MASTERY PAGE -->
-      <iframe id="page-gamemastery" class="page" style="display: none; border: none; width: 100%; height: 100%;" src="mp_gamemastery.html"></iframe>
+      <iframe id="page-gamemastery" class="page" style="display: none; border: none; width: 100%; height: 100%;"
+        src="mp_gamemastery.html"></iframe>
 
       <!-- ADD QUESTIONS PAGE -->
-      <iframe id="page-addquestions" class="page" style="display: none; border: none; width: 100%; height: 100%;" src="mp_addquestions.html"></iframe>
+      <iframe id="page-addquestions" class="page" style="display: none; border: none; width: 100%; height: 100%;"
+        src="mp_addquestions.html"></iframe>
 
       <!-- DOWNLOADS PAGE -->
-      <iframe id="page-downloads" class="page" style="display: none; border: none; width: 100%; height: 100%;" src="mp_downloads.html"></iframe>
+      <iframe id="page-downloads" class="page" style="display: none; border: none; width: 100%; height: 100%;"
+        src="mp_downloads.html"></iframe>
 
+      <!-- MANAGE STUDENTS PAGE -->
+      <iframe id="page-managestudents" class="page" style="display: none; border: none; width: 100%; height: 100%;"
+        src="mp_managestudents.html"></iframe>
   </div>
 
 
   <script src="js/charts.js"></script>
 </body>
+
 </html>
