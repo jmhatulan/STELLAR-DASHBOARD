@@ -7,182 +7,185 @@
     <title>Manage Students - Administration</title>
     <style>
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            font-size: 20px;
-            background-color: #f1f5f9;
-            color: #1e293b;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 22px;
+            background-color: #f8fafc;
+            color: #0f172a;
             margin: 0;
-            padding: 50px;
+            padding: 60px;
         }
 
         .admin-wrapper {
-            max-width: 1500px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
         .card {
             background: #ffffff;
-            padding: 50px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 40px;
+            padding: 60px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 50px;
             border: 1px solid #e2e8f0;
         }
 
         h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 800;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
+            color: #1e293b;
         }
 
         h2 {
-            font-size: 2rem;
-            margin-bottom: 30px;
+            font-size: 2.2rem;
+            margin-bottom: 35px;
             color: #334155;
         }
 
         .input-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
         }
 
         .field-box {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
         }
 
         label {
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: #475569;
         }
 
         input {
-            padding: 20px;
-            font-size: 1.25rem;
+            padding: 24px;
+            font-size: 1.4rem;
             border: 3px solid #cbd5e1;
-            border-radius: 12px;
-            background: #f8fafc;
+            border-radius: 14px;
+            background: #f1f5f9;
         }
 
         .actions-bar {
             display: flex;
-            gap: 20px;
+            gap: 25px;
             flex-wrap: wrap;
         }
 
         button {
-            padding: 20px 40px;
-            font-size: 1.25rem;
+            padding: 25px 50px;
+            font-size: 1.4rem;
             font-weight: 700;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .btn-view {
-            background: #3b82f6;
+            background: #2563eb;
             color: white;
         }
 
         .btn-archive {
-            background: #10b981;
+            background: #059669;
             color: white;
         }
 
         .btn-update {
-            background: #f59e0b;
+            background: #d97706;
             color: white;
         }
 
         .btn-delete {
-            background: #ef4444;
+            background: #dc2626;
             color: white;
         }
 
         .status-panel {
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 30px;
+            padding: 30px;
+            border-radius: 14px;
+            margin-bottom: 40px;
             font-weight: 700;
+            font-size: 1.5rem;
             display: none;
         }
 
         .error {
             background: #fee2e2;
-            color: #b91c1c;
-            border: 2px solid #fca5a5;
+            color: #991b1b;
+            border: 3px solid #fecaca;
             display: block;
         }
 
         .success {
             background: #dcfce7;
-            color: #15803d;
-            border: 2px solid #86efac;
+            color: #166534;
+            border: 3px solid #bbf7d0;
             display: block;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 30px;
         }
 
         th,
         td {
-            padding: 25px;
+            padding: 30px;
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 2px solid #f1f5f9;
         }
 
         th {
             background: #f8fafc;
             font-weight: 800;
+            font-size: 1.4rem;
         }
     </style>
 </head>
 
 <body>
     <div class="admin-wrapper">
-        <h1>Student Management Portal</h1>
+        <h1>Management Portal</h1>
         <div id="notice" class="status-panel"></div>
 
         <section class="card">
-            <h2>Search & Actions</h2>
+            <h2>Search & Controls</h2>
             <div class="input-grid">
                 <div class="field-box">
                     <label>Grade Level</label>
-                    <input type="number" id="grade" placeholder="e.g., 10">
+                    <input type="number" id="grade" placeholder="e.g. 10">
                 </div>
                 <div class="field-box">
                     <label>Section Name</label>
-                    <input type="text" id="section" placeholder="e.g., Diamond">
+                    <input type="text" id="section" placeholder="e.g. Diamond">
                 </div>
             </div>
             <div class="actions-bar">
-                <button class="btn-view" onclick="onView()">View Students</button>
-                <button class="btn-archive" onclick="onArchive()">Archive to CSV</button>
-                <button class="btn-delete" onclick="onDelete()">Delete Class</button>
+                <button class="btn-view" onclick="onView()">View List</button>
+                <button class="btn-archive" onclick="onArchive()">Download Full System Backup (ZIP)</button>
+                <button class="btn-delete" onclick="onDelete()">Delete Class Data</button>
             </div>
         </section>
 
         <section class="card">
-            <h2>Migration Tools</h2>
+            <h2>Class Migration</h2>
             <div class="input-grid">
                 <div class="field-box">
-                    <label>New Grade</label>
+                    <label>Move to Grade</label>
                     <input type="number" id="newGrade">
                 </div>
                 <div class="field-box">
-                    <label>New Section</label>
+                    <label>Move to Section</label>
                     <input type="text" id="newSection">
                 </div>
             </div>
-            <button class="btn-update" onclick="onUpdate()">Move Students</button>
+            <button class="btn-update" onclick="onUpdate()">Apply Migration</button>
         </section>
 
         <section class="card" id="studentDisplay" style="display: none;">

@@ -39,22 +39,34 @@ async function onArchive() {
     const grade = document.getElementById('grade').value;
     const section = document.getElementById('section').value;
 
-    if (!grade || !section) return notify('Grade and section required.', true);
+    if (!grade || !section) return notify('Enter Grade and Section to archive.', true);
 
     try {
-        const response = await fetch(`${BASE_URL}/class/view-all?grade=${grade}&section=${encodeURIComponent(section)}`, {
+        notify(`Preparing archive for Grade ${grade} - ${section}...`);
+
+        const response = await fetch(`${BASE_URL}/class/archive?grade=${grade}&section=${encodeURIComponent(section)}`, {
             method: 'GET',
             headers: getHeaders()
         });
 
-        const data = await response.json();
-        if (response.ok && data.students) {
-            downloadCSV(data.students, `Archive_G${grade}_${section}.csv`);
-        } else {
-            notify('No data found.', true);
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Archive failed');
         }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Archive_Grade${grade}_${section}.zip`;
+        document.body.appendChild(a);
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        notify('Class archive downloaded.');
     } catch (err) {
-        notify('Archive failed.', true);
+        notify(err.message, true);
     }
 }
 
@@ -68,12 +80,7 @@ async function onUpdate() {
         return notify('All fields are required.', true);
     }
 
-    const params = new URLSearchParams({
-        prevGrade,
-        prevSection,
-        newGrade,
-        newSection
-    });
+    const params = new URLSearchParams({ prevGrade, prevSection, newGrade, newSection });
 
     try {
         const response = await fetch(`${BASE_URL}/class/update?${params.toString()}`, {
@@ -97,8 +104,8 @@ async function onDelete() {
     const grade = document.getElementById('grade').value;
     const section = document.getElementById('section').value;
 
-    if (!grade || !section) return;
-    if (!confirm('Permanently delete this class?')) return;
+    if (!grade || !section) return notify('Grade and section required.', true);
+    if (!confirm('Permanently delete this class? This will delete all student records, credentials, and progress.')) return;
 
     try {
         const response = await fetch(`${BASE_URL}/class/delete?grade=${grade}&section=${encodeURIComponent(section)}`, {
@@ -132,17 +139,4 @@ function renderStudents(students) {
         tbody.innerHTML += `<tr><td>${s.name}</td><td>${s.gender}</td></tr>`;
     });
     display.style.display = 'block';
-}
-
-function downloadCSV(students, filename) {
-    const headers = ["UserID", "Name", "Gender", "XP"];
-    const rows = students.map(s => [s.userID, `"${s.name}"`, s.gender, s.progress?.experiencePoints || 0]);
-    const content = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-    const blob = new Blob([content], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
 }
