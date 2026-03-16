@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,7 +14,7 @@
   <div class="login-container">
     <div class="login-card">
       <div class="login-logo">
-        
+
         <h1>STELLAR DASHBOARD</h1>
       </div>
 
@@ -36,14 +37,14 @@
 
   <script>
     const API_BASE_URL = 'https://stellar-backend-ki78.onrender.com';
-    
+
     document.getElementById("loginForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-      
+
       const username = document.getElementById("username").value;
       const password = document.getElementById("password").value;
       const errorDiv = document.getElementById("loginError");
-      
+
       try {
         const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
           method: 'POST',
@@ -52,20 +53,21 @@
           },
           body: JSON.stringify({ username, password })
         });
-        
+
         if (!response.ok) {
           const data = await response.json();
           errorDiv.textContent = data.message || 'Login failed';
           errorDiv.style.display = 'block';
           return;
         }
-        
+
         const data = await response.json();
         localStorage.setItem('jwtToken', data.token);
         localStorage.setItem('adminUsername', username);
+        localStorage.setItem('adminType', data.type);
         console.log('Admin logged in successfully');
         window.location.href = "MainPage.html";
-        
+
       } catch (error) {
         console.error('Login error:', error);
         errorDiv.textContent = 'Connection error. Please check the backend server.';
@@ -75,4 +77,5 @@
   </script>
 
 </body>
+
 </html>
