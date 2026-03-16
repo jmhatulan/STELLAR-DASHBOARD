@@ -6,12 +6,13 @@ const sectionsMap = {
     "6": ["Excellence", "Perseverance"]
 };
 
+let currentStudents = [];
 let uploadedData = [];
 
 function updateSections(gradeId, sectionId) {
     const grade = document.getElementById(gradeId).value;
     const sectionSelect = document.getElementById(sectionId);
-    sectionSelect.innerHTML = '<option value="">Select Section</option>';
+    sectionSelect.innerHTML = '<option value="">Select</option>';
     if (grade && sectionsMap[grade]) {
         sectionsMap[grade].forEach(sec => {
             const opt = document.createElement('option');
@@ -19,8 +20,6 @@ function updateSections(gradeId, sectionId) {
             opt.textContent = sec;
             sectionSelect.appendChild(opt);
         });
-    } else {
-        sectionSelect.innerHTML = '<option value="">Select Grade First</option>';
     }
 }
 
@@ -32,144 +31,65 @@ const getHeaders = () => ({
 const notify = (msg, isErr = false) => {
     const panel = document.getElementById('notice');
     panel.textContent = msg;
-    panel.className = isErr ? 'status-panel error' : 'status-panel success';
+    panel.style.background = isErr ? '#dc2626' : '#059669';
     panel.style.display = 'block';
-    setTimeout(() => { panel.style.display = 'none'; }, 5000);
+    setTimeout(() => { panel.style.display = 'none'; }, 4000);
 };
 
-// --- BATCH REGISTER ---
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        uploadedData = json.map(row => {
-            const norm = {};
-            Object.keys(row).forEach(k => norm[k.toLowerCase().trim()] = row[k]);
-            return norm;
-        });
-        renderPreview();
-    };
-    reader.readAsArrayBuffer(file);
+function openTab(evt, tabId) {
+    const contents = document.getElementsByClassName("tab-content");
+    for (let i = 0; i < contents.length; i++) contents[i].classList.remove("active");
+    const links = document.getElementsByClassName("tab-link");
+    for (let i = 0; i < links.length; i++) links[i].classList.remove("active");
+    document.getElementById(tabId).classList.add("active");
+    evt.currentTarget.classList.add("active");
 }
 
-function renderPreview() {
-    const tbody = document.getElementById('previewRows');
-    tbody.innerHTML = '';
-    uploadedData.forEach(item => {
-        tbody.innerHTML += `<tr><td>${item.name || ''}</td><td>${item.gender || ''}</td><td>${item.username || ''}</td><td>${item.password || ''}</td></tr>`;
-    });
-    document.getElementById('previewContainer').style.display = 'block';
-}
-
-function clearPreview() {
-    uploadedData = [];
-    document.getElementById('previewContainer').style.display = 'none';
-    document.getElementById('fileInput').value = '';
-}
-
-async function onConfirmRegistration() {
-    const grade = document.getElementById('grade').value;
-    const section = document.getElementById('section').value;
-
-    if (!grade || !section) {
-        return notify("Select target Grade and Section in 'Search & Controls' first.", true);
-    }
-
-    if (uploadedData.length === 0) return notify("No data to upload.", true);
-
-    const users = uploadedData.map(u => ({
-        name: u.name,
-        gender: u.gender,
-        username: String(u.username),
-        password: String(u.password),
-        gradeLevel: Number(grade),
-        section: section
-    }));
-
-    try {
-        notify("Uploading students...");
-        const response = await fetch(`${BASE_URL}/class/create`, {
-            method: 'POST', // Updated to POST
-            headers: getHeaders(),
-            body: JSON.stringify({ users }) // Data sent in body
-        });
-
-        const data = await response.json();
-        if (response.ok) {
-            notify(`Successfully registered ${data.usersCreated} students.`);
-            clearPreview();
-            onView(); // Refresh the list
-        } else {
-            notify(data.message || "Registration failed.", true);
-        }
-    } catch (e) {
-        notify("Server error during registration.", true);
-    }
-}
-
-// --- MIGRATION ---
-async function onUpdate() {
-    const prevGrade = document.getElementById('grade').value;
-    const prevSection = document.getElementById('section').value;
-    const newGrade = document.getElementById('newGrade').value;
-    const newSection = document.getElementById('newSection').value;
-
-    if (!prevGrade || !prevSection || !newGrade || !newSection) return notify("Select current class and target class.", true);
-
-    try {
-        const response = await fetch(`${BASE_URL}/class/update?prevGrade=${prevGrade}&prevSection=${encodeURIComponent(prevSection)}&newGrade=${newGrade}&newSection=${encodeURIComponent(newSection)}`, {
-            method: 'PATCH',
-            headers: getHeaders()
-        });
-        if (response.ok) {
-            notify("Students migrated successfully.");
-            document.getElementById('grade').value = newGrade;
-            updateSections('grade', 'section');
-            document.getElementById('section').value = newSection;
-            onView();
-        } else {
-            const d = await response.json(); notify(d.message, true);
-        }
-    } catch (e) { notify("Migration failed.", true); }
-}
-
-// --- ROSTER & CREDENTIALS ---
 async function onView() {
     const g = document.getElementById('grade').value;
     const s = document.getElementById('section').value;
-    if (!g || !s) return notify("Select Grade and Section.", true);
+    if (!g || !s) return;
     try {
         const res = await fetch(`${BASE_URL}/class/view?grade=${g}&section=${encodeURIComponent(s)}`, { headers: getHeaders() });
         const d = await res.json();
-        if (res.ok) renderStudents(d.students);
-    } catch (e) { notify("Failed to load roster.", true); }
+        if (res.ok) {
+            currentStudents = d.students;
+            renderStudents(currentStudents);
+        }
+    } catch (e) { notify("Network error", true); }
+}
+
+function filterStudents() {
+    const q = document.getElementById('studentSearch').value.toLowerCase();
+    const filtered = currentStudents.filter(s => s.name.toLowerCase().includes(q));
+    renderStudents(filtered);
 }
 
 function renderStudents(students) {
     const tbody = document.getElementById('studentRows');
+    const countBadge = document.getElementById('studentCount');
     tbody.innerHTML = '';
+    countBadge.textContent = `${students.length} Students`;
+
     students.forEach((s, i) => {
+        const gClass = s.gender?.toLowerCase() === 'male' ? 'male' : 'female';
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${s.name}</td>
-            <td>${s.gender}</td>
+            <td><strong style="color: #0f172a;">${s.name}</strong></td>
+            <td><span class="gender-tag ${gClass}">${s.gender}</span></td>
             <td>
-                <span id="u-txt-${i}">${s.username || ''}</span>
-                <input type="text" class="row-input" value="${s.username || ''}" id="u-in-${i}" data-old="${s.username || ''}">
+                <span id="u-txt-${i}" style="font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">${s.username || ''}</span>
+                <input type="text" style="display:none; width: 140px;" value="${s.username || ''}" id="u-in-${i}" data-old="${s.username || ''}">
             </td>
             <td>
-                <span id="p-txt-${i}">********</span>
-                <input type="password" class="row-input" placeholder="New Password" id="p-in-${i}">
+                <span id="p-txt-${i}" style="color: #cbd5e1;">••••••••</span>
+                <input type="password" style="display:none; width: 140px;" placeholder="New password" id="p-in-${i}">
             </td>
-            <td>
-                <button class="btn-edit-icon" id="e-btn-${i}" onclick="toggleEdit(${i}, true)">✎</button>
-                <div id="ctrl-${i}" style="display:none; gap:5px;">
-                    <button class="btn-save" onclick="onSaveCredentials(${i})">Save</button>
-                    <button class="btn-cancel" onclick="toggleEdit(${i}, false)">Cancel</button>
+            <td style="text-align: right;">
+                <button id="e-btn-${i}" onclick="toggleEdit(${i}, true)" style="background: none; color: #3b82f6; cursor: pointer; border:none; font-weight:600;">Edit</button>
+                <div id="ctrl-${i}" style="display:none; gap:12px; justify-content: flex-end;">
+                    <button onclick="onSaveCredentials(${i})" style="color: #059669; background:none; border:none; cursor:pointer; font-weight:700;">Save</button>
+                    <button onclick="toggleEdit(${i}, false)" style="color: #64748b; background:none; border:none; cursor:pointer;">Cancel</button>
                 </div>
             </td>
         `;
@@ -180,25 +100,17 @@ function renderStudents(students) {
 
 function toggleEdit(i, editing) {
     document.getElementById(`u-txt-${i}`).style.display = editing ? 'none' : 'inline';
-    document.getElementById(`u-in-${i}`).style.display = editing ? 'block' : 'none';
+    document.getElementById(`u-in-${i}`).style.display = editing ? 'inline-block' : 'none';
     document.getElementById(`p-txt-${i}`).style.display = editing ? 'none' : 'inline';
-    document.getElementById(`p-in-${i}`).style.display = editing ? 'block' : 'none';
+    document.getElementById(`p-in-${i}`).style.display = editing ? 'inline-block' : 'none';
     document.getElementById(`e-btn-${i}`).style.display = editing ? 'none' : 'inline-block';
     document.getElementById(`ctrl-${i}`).style.display = editing ? 'flex' : 'none';
-
-    if (!editing) {
-        // Reset values on cancel
-        const input = document.getElementById(`u-in-${i}`);
-        input.value = input.getAttribute('data-old');
-        document.getElementById(`p-in-${i}`).value = '';
-    }
 }
 
 async function onSaveCredentials(i) {
     const uIn = document.getElementById(`u-in-${i}`);
     const pIn = document.getElementById(`p-in-${i}`);
     const old = uIn.getAttribute('data-old');
-
     try {
         const res = await fetch(`${BASE_URL}/student/credentials`, {
             method: 'PATCH',
@@ -210,36 +122,116 @@ async function onSaveCredentials(i) {
             })
         });
         if (res.ok) {
-            notify("Saved.");
-            uIn.setAttribute('data-old', uIn.value);
-            document.getElementById(`u-txt-${i}`).textContent = uIn.value;
-            toggleEdit(i, false);
+            notify("Account updated");
+            onView();
         } else {
             const d = await res.json(); notify(d.message, true);
         }
-    } catch (e) { notify("Save failed.", true); }
+    } catch (e) { notify("Update failed", true); }
 }
 
-// --- DELETE / ARCHIVE ---
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        uploadedData = json.map(row => {
+            const n = {};
+            Object.keys(row).forEach(k => n[k.toLowerCase().trim()] = row[k]);
+            return n;
+        });
+        renderRegPreview();
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function renderRegPreview() {
+    const tbody = document.getElementById('previewRows');
+    tbody.innerHTML = '';
+    uploadedData.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${item.name || ''}</td><td>${item.gender || ''}</td><td>${item.username || ''}</td><td>${item.password || ''}</td>`;
+        tbody.appendChild(row);
+    });
+    document.getElementById('previewContainer').style.display = 'block';
+}
+
+async function onConfirmRegistration() {
+    const g = document.getElementById('grade').value;
+    const s = document.getElementById('section').value;
+    if (!g || !s) return notify("Select a Grade and Section first", true);
+
+    const users = uploadedData.map(u => ({
+        name: u.name,
+        gender: u.gender,
+        username: String(u.username),
+        password: String(u.password),
+        gradeLevel: Number(g),
+        section: s
+    }));
+
+    try {
+        const res = await fetch(`${BASE_URL}/class/create`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ users })
+        });
+        if (res.ok) {
+            notify("Registration complete");
+            document.getElementById('previewContainer').style.display = 'none';
+            onView();
+        }
+    } catch (e) { notify("Registration failed", true); }
+}
+
+async function onUpdate() {
+    const g = document.getElementById('grade').value;
+    const s = document.getElementById('section').value;
+    const ng = document.getElementById('newGrade').value;
+    const ns = document.getElementById('newSection').value;
+    if (!ng || !ns) return notify("Select target location", true);
+    try {
+        const res = await fetch(`${BASE_URL}/class/update?prevGrade=${g}&prevSection=${encodeURIComponent(s)}&newGrade=${ng}&newSection=${encodeURIComponent(ns)}`, {
+            method: 'PATCH',
+            headers: getHeaders()
+        });
+        if (res.ok) {
+            notify("Students migrated");
+            document.getElementById('grade').value = ng;
+            updateSections('grade', 'section');
+            document.getElementById('section').value = ns;
+            onView();
+        }
+    } catch (e) { notify("Migration failed", true); }
+}
+
 async function onDelete() {
     const g = document.getElementById('grade').value;
     const s = document.getElementById('section').value;
-    if (!g || !s || !confirm("Delete class?")) return;
+    if (!g || !s || !confirm("Permanently delete students in this section?")) return;
     try {
         const res = await fetch(`${BASE_URL}/class/delete?grade=${g}&section=${encodeURIComponent(s)}`, { method: 'DELETE', headers: getHeaders() });
-        if (res.ok) { notify("Deleted."); document.getElementById('studentDisplay').style.display = 'none'; }
-    } catch (e) { notify("Delete failed.", true); }
+        if (res.ok) {
+            notify("Section cleared");
+            onView();
+        }
+    } catch (e) { notify("Delete failed", true); }
 }
 
 async function onArchive() {
     const g = document.getElementById('grade').value;
     const s = document.getElementById('section').value;
-    if (!g || !s) return notify("Select class.", true);
+    if (!g || !s) return notify("Select a class first", true);
     try {
         const res = await fetch(`${BASE_URL}/class/archive?grade=${g}&section=${encodeURIComponent(s)}`, { headers: getHeaders() });
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = `Archive_G${g}_${s}.zip`; a.click();
-    } catch (e) { notify("Archive failed.", true); }
+        a.href = url;
+        a.download = `Backup_G${g}_${s}.zip`;
+        a.click();
+    } catch (e) { notify("Archive failed", true); }
 }
