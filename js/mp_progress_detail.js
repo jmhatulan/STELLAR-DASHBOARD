@@ -19,10 +19,33 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   let selectedStudentId = null;
+  let overallAverage = 0;
   const chartInstances = {};
 
   // Update page title
   document.querySelector('h1').textContent = `Grade ${gradeLevel} - ${section}`;
+
+  // Fetch overall average performance for the grade
+  async function fetchOverallAverage() {
+    try {
+      const url = `${API_BASE_URL}/api/admin/dashboard/overview?gradeLevel=${gradeLevel}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        overallAverage = data.averagePerformance || 0;
+        console.log('Overall average for Grade', gradeLevel, ':', overallAverage);
+      }
+    } catch (error) {
+      console.error('Error fetching overall average:', error);
+    }
+  }
 
   // Fetch students in the class
   async function fetchClassStudents() {
@@ -231,8 +254,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Update challenge performance
     const performanceScore = document.querySelector('.performance-score');
+    const performanceIndicator = document.getElementById('performance-indicator');
+    const averageComparison = document.getElementById('average-comparison');
+    
     if (performanceScore) {
       performanceScore.textContent = challengePerformance + ' PTS.';
+    }
+
+    // Display comparison indicator
+    if (performanceIndicator && averageComparison) {
+      averageComparison.textContent = `Class Average: ${overallAverage} PTS.`;
+      
+      if (overallAverage > 0) {
+        if (challengePerformance > overallAverage) {
+          performanceIndicator.innerHTML = '📈';
+          performanceIndicator.style.color = '#10b981';
+          performanceIndicator.title = 'Above class average';
+        } else if (challengePerformance < overallAverage) {
+          performanceIndicator.innerHTML = '📉';
+          performanceIndicator.style.color = '#ef4444';
+          performanceIndicator.title = 'Below class average';
+        } else {
+          performanceIndicator.innerHTML = '➡️';
+          performanceIndicator.style.color = '#fbbf24';
+          performanceIndicator.title = 'At class average';
+        }
+      }
     }
 
     // Update achievements
@@ -303,7 +350,67 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Update weekly average score charts
-    updateWeeklyCharts(weeklyAverages);
+    updateAttemptsList(data);
+  }
+
+  // Display attempts lists for each gamemode
+  function updateAttemptsList(data) {
+    const games = [
+      { id: 'text-extract-attempts', gameID: 'TEST-01', name: 'Text Extract' },
+      { id: 'two-truths-attempts', gameID: 'TEST-02', name: 'Two Truths' },
+      { id: 'scrutinize-attempts', gameID: 'TEST-03', name: 'Statement Scrutinize' }
+    ];
+
+    games.forEach(game => {
+      const container = document.getElementById(game.id);
+      if (!container) return;
+
+      // Get attempts from the data
+      const allAttempts = data.attempts || [];
+      const gameAttempts = allAttempts.filter(a => a.gameID === game.gameID);
+
+      if (!gameAttempts || gameAttempts.length === 0) {
+        container.innerHTML = '<p style="color: #999;">No attempts</p>';
+        return;
+      }
+
+      // Sort by date descending (newest first)
+      gameAttempts.sort((a, b) => new Date(b.attemptDate) - new Date(a.attemptDate));
+
+      // Create table
+      let html = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <thead style="background: #f0f0f0;">
+            <tr>
+              <th style="padding: 8px; text-align: left; border-bottom: 1px solid #ddd;">Attempt #</th>
+              <th style="padding: 8px; text-align: center; border-bottom: 1px solid #ddd;">Score</th>
+              <th style="padding: 8px; text-align: right; border-bottom: 1px solid #ddd;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      gameAttempts.forEach((attempt, index) => {
+        const date = new Date(attempt.attemptDate);
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+        const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        
+        html += `
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 8px; text-align: left;">#${gameAttempts.length - index}</td>
+            <td style="padding: 8px; text-align: center; font-weight: 600; color: #10b981;">${attempt.score}</td>
+            <td style="padding: 8px; text-align: right; color: #666;">${dateStr} ${timeStr}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = html;
+    });
   }
 
   // Update weekly average score charts
@@ -386,6 +493,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Initialize
+  fetchOverallAverage();
   fetchClassStudents();
 });
 
