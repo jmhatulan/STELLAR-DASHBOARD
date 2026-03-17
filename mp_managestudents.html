@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Students - Administration</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -19,32 +18,20 @@
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
             margin: 0;
             padding: 40px;
         }
 
-        header {
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin: 0 0 30px 0;
-            letter-spacing: -0.025em;
-        }
-
-        .top-navigation-bar {
+        .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--border-light);
             margin-bottom: 30px;
-            gap: 20px;
         }
 
         .tab-group {
@@ -60,42 +47,11 @@
             cursor: pointer;
             border: none;
             background: none;
-            transition: all 0.2s;
         }
 
         .tab-link.active {
             color: var(--primary);
             background: #eff6ff;
-        }
-
-        .selector-group {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .field-inline {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .field-inline label {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        select,
-        .search-input,
-        .row-input {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            font-size: 0.9rem;
-            background: #f8fafc;
-            outline: none;
         }
 
         .tab-content {
@@ -106,65 +62,13 @@
             display: block;
         }
 
-        .view-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .search-input {
-            width: 320px;
-        }
-
-        .count-badge {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            background: var(--border-light);
-            padding: 6px 12px;
-            border-radius: 20px;
-        }
-
-        .styled-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .styled-table th {
-            text-align: left;
-            padding: 12px 15px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            border-bottom: 2px solid var(--border-light);
-        }
-
-        .styled-table td {
-            padding: 24px 15px;
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .gender-tag {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 90px;
-            height: 32px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .male {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
-
-        .female {
-            background: #fce7f3;
-            color: #9d174d;
+        select,
+        input {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            outline: none;
         }
 
         .btn {
@@ -173,21 +77,10 @@
             font-weight: 700;
             cursor: pointer;
             border: none;
-            font-size: 0.9rem;
         }
 
         .btn-primary {
             background: var(--primary);
-            color: white;
-        }
-
-        .btn-warn {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
             color: white;
         }
 
@@ -196,165 +89,206 @@
             color: white;
         }
 
-        .section-title {
-            margin: 0 0 20px 0;
-            font-size: 1.25rem;
+        .btn-danger {
+            background: var(--danger);
+            color: white;
         }
 
-        .maintenance-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 25px 0;
+        .btn-warn {
+            background: var(--warning);
+            color: white;
+        }
+
+        .card {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .styled-table th {
+            text-align: left;
+            padding: 12px;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border-light);
+            font-size: 0.8rem;
+        }
+
+        .styled-table td {
+            padding: 12px;
             border-bottom: 1px solid var(--border-light);
         }
 
         .toast {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
-            padding: 16px 24px;
-            border-radius: 12px;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
             color: white;
-            font-weight: 600;
             display: none;
-            z-index: 1000;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        /* Table Lock & Column Widths */
+        .styled-table {
+            table-layout: fixed;
+            /* Prevents resizing when inputs appear */
+            width: 100%;
+        }
+
+        .table-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 4px;
+            margin: 0;
+            border: 1px solid var(--primary);
+        }
+
+        .col-name {
+            width: 30%;
+        }
+
+        .col-gender {
+            width: 15%;
+        }
+
+        .col-user {
+            width: 25%;
+        }
+
+        .col-pass {
+            width: 20%;
+        }
+
+        .col-action {
+            width: 10%;
         }
     </style>
 </head>
 
 <body>
-
     <div id="notice" class="toast"></div>
 
     <header>
-        <h1>Student Management Portal</h1>
-
-        <div class="top-navigation-bar">
-            <nav class="tab-group">
-                <button class="tab-link active" onclick="openTab(event, 'roster-tab')">Accounts</button>
-                <button class="tab-link" onclick="openTab(event, 'reg-tab')">Registration</button>
-                <button class="tab-link" onclick="openTab(event, 'mig-tab')">Migration</button>
-                <button class="tab-link" onclick="openTab(event, 'maint-tab')">Maintenance</button>
-            </nav>
-
-            <div class="selector-group">
-                <div class="field-inline">
-                    <label>Grade</label>
-                    <select id="grade" onchange="updateSections('grade', 'section')">
-                        <option value="">Select</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
-                <div class="field-inline">
-                    <label>Section</label>
-                    <select id="section" onchange="onView()">
-                        <option value="">Select</option>
-                    </select>
-                </div>
+        <h1>Student Management</h1>
+        <div class="top-nav">
+            <div class="tab-group">
+                <button class="tab-link active" onclick="openTab(event, 'view-tab')">Manage Records</button>
+                <button class="tab-link" onclick="openTab(event, 'reg-tab')">Registration & Migration</button>
+                <button class="tab-link" onclick="openTab(event, 'maint-tab')">System Maintenance</button>
+            </div>
+            <div id="global-filters" style="display: flex; gap: 10px; align-items: center;">
+                <label style="font-size: 0.8rem; font-weight: bold; color: var(--text-muted);">VIEWING</label>
+                <select id="grade" onchange="updateSections('grade', 'section')">
+                    <option value="">Grade</option>
+                    <option value="4">Grade 4</option>
+                    <option value="5">Grade 5</option>
+                    <option value="6">Grade 6</option>
+                </select>
+                <select id="section" onchange="onView()">
+                    <option value="">Section</option>
+                </select>
             </div>
         </div>
     </header>
 
     <main>
-        <div id="roster-tab" class="tab-content active">
-            <div class="view-controls">
-                <input type="text" id="studentSearch" class="search-input" placeholder="Search students..."
-                    onkeyup="filterStudents()">
-                <span class="count-badge" id="studentCount">0 Students</span>
+        <div id="view-tab" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <input type="text" id="studentSearch" placeholder="Search by name or username..."
+                    oninput="filterStudents()" style="width: 300px;">
+                <span id="studentCount" style="font-weight: bold; color: var(--text-muted);">0 Students</span>
             </div>
-
-            <div id="studentDisplay" style="display: none;">
-                <table class="styled-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Gender</th>
-                            <th>Username</th>
-                            <th>Password</th>
-                            <th style="text-align: right;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentRows"></tbody>
-                </table>
-            </div>
+            <table class="styled-table">
+                <thead>
+                    <tr>
+                        <th class="col-name">Name</th>
+                        <th class="col-gender">Gender</th>
+                        <th class="col-user">Username</th>
+                        <th class="col-pass">New Password</th>
+                        <th class="col-action" style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="studentRows"></tbody>
+            </table>
         </div>
 
         <div id="reg-tab" class="tab-content">
-            <h2 class="section-title">Batch Registration</h2>
-            <div style="padding: 40px; border: 2px dashed #e2e8f0; border-radius: 12px; text-align: center;">
-                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" style="display: none;"
-                    onchange="handleFileUpload(event)">
-                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">Choose Excel/CSV
-                    File</button>
-                <p style="color: var(--text-muted); margin-top: 15px;">Upload student list to register them to the
-                    selected class.</p>
-            </div>
-            <div id="previewContainer" style="display: none; margin-top: 30px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                    <h3>Preview</h3>
-                    <button class="btn btn-success" onclick="onConfirmRegistration()">Finalize Registration</button>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <h3>Individual Registration</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <input type="text" id="regName" placeholder="Full Name">
+                        <select id="regGender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                        <input type="text" id="regUser" placeholder="Username">
+                        <input type="password" id="regPass" placeholder="Password">
+                        <div style="display: flex; gap: 10px;">
+                            <select id="regGrade" onchange="updateSections('regGrade', 'regSection')" style="flex: 1;">
+                                <option value="">Grade</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                            <select id="regSection" style="flex: 1;">
+                                <option value="">Section</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="onRegisterStudent()">Register Student</button>
+                    </div>
                 </div>
-                <table class="styled-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Gender</th>
-                            <th>Username</th>
-                            <th>Password</th>
-                        </tr>
-                    </thead>
-                    <tbody id="previewRows"></tbody>
-                </table>
-            </div>
-        </div>
 
-        <div id="mig-tab" class="tab-content">
-            <h2 class="section-title">Migrate Students</h2>
-            <p style="color: var(--text-muted);">Transfer all students from the current selection to a new Grade or
-                Section.</p>
-            <div class="selector-group" style="margin-top: 25px;">
-                <div class="field-inline">
-                    <label>To Grade</label>
-                    <select id="newGrade" onchange="updateSections('newGrade', 'newSection')">
-                        <option value="">Select</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
+                <div class="card">
+                    <h3>Export Data for Migration</h3>
+                    <p>Select a class to generate a migration-ready CSV file.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <select id="expGrade" onchange="updateSections('expGrade', 'expSection')">
+                            <option value="">Grade</option>
+                            <option value="4">Grade 4</option>
+                            <option value="5">Grade 5</option>
+                            <option value="6">Grade 6</option>
+                        </select>
+                        <select id="expSection">
+                            <option value="">Section</option>
+                        </select>
+                        <button class="btn btn-outline" onclick="onExport()">Export CSV</button>
+                    </div>
                 </div>
-                <div class="field-inline">
-                    <label>To Section</label>
-                    <select id="newSection">
-                        <option value="">Select</option>
-                    </select>
-                </div>
-                <button class="btn btn-warn" onclick="onUpdate()">Start Migration</button>
+            </div>
+
+            <div id="batchEnrollmentContainer" class="card" style="border: 2px dashed #e2e8f0; text-align: center;">
+                <h3>Batch Enrollment</h3>
+                <p>New Academic Year detected with empty sections. Upload migration CSV files.</p>
+                <input type="file" id="csvFile" accept=".csv" style="margin: 20px 0;">
+                <br>
+                <button class="btn btn-primary" onclick="onBatchEnroll()">Process Batch Enrollment</button>
             </div>
         </div>
 
         <div id="maint-tab" class="tab-content">
-            <h2 class="section-title">Maintenance & Archiving</h2>
-
-            <div class="maintenance-row">
-                <div>
-                    <strong>Download Backup</strong>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">Export all student credentials for the
-                        selected section as a ZIP file.</div>
+            <div class="card">
+                <h3>System-Wide Archive</h3>
+                <p>Archiving will save all student data and related logs into a ZIP file in the database.</p>
+                <div style="display: flex; gap: 10px; margin: 15px 0;">
+                    <input type="number" id="arcStart" placeholder="Start Year (e.g. 2025)">
+                    <input type="number" id="arcEnd" placeholder="End Year (e.g. 2026)">
                 </div>
-                <button class="btn btn-success" onclick="onArchive()">Download ZIP</button>
+                <button class="btn btn-success" onclick="onArchiveAll()">Generate & Download Archive</button>
             </div>
-
-            <div class="maintenance-row">
-                <div>
-                    <strong>Delete Class Records</strong>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">Permanently remove all students and their
-                        data from this section.</div>
-                </div>
-                <button class="btn btn-danger" onclick="onDelete()">Clear Section</button>
+            <div class="card" style="border-color: var(--danger);">
+                <h3 style="color: var(--danger);">Purge All Records</h3>
+                <p>Permanently remove ALL student accounts, progress, and logs to prepare for a new year.</p>
+                <button class="btn btn-danger" onclick="onDeleteAll()">Delete All Student Data</button>
             </div>
         </div>
     </main>
