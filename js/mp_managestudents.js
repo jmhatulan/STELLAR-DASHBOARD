@@ -80,24 +80,50 @@ function renderStudentTable(students) {
             <td>${s.gender}</td>
             <td id="user-display-${i}">${s.username}</td>
             <td id="pass-display-${i}">********</td>
-            <td style="text-align: right;">
+            <td id="action-cell-${i}" style="text-align: right;">
                 <button class="btn btn-outline" id="btn-edit-${i}" onclick="activateEditMode(${i}, '${s.username}')">Edit</button>
+                <button class="btn btn-warning" onclick="onResetPassword('${s.name}')">Reset</button>
             </td>
         </tr>
     `).join('');
 }
 
+let editBackup = {};
+
 function activateEditMode(index, originalUsername) {
     const userCell = document.getElementById(`user-display-${index}`);
     const passCell = document.getElementById(`pass-display-${index}`);
-    const btn = document.getElementById(`btn-edit-${index}`);
+    const actionCell = document.getElementById(`action-cell-${index}`);
+
+    // Store original HTML and data for cancelling
+    editBackup[index] = {
+        userHTML: userCell.innerHTML,
+        passHTML: passCell.innerHTML,
+        actionHTML: actionCell.innerHTML,
+        username: originalUsername
+    };
 
     userCell.innerHTML = `<input type="text" id="edit-user-${index}" value="${originalUsername}" style="width:100%; padding:4px;">`;
     passCell.innerHTML = `<input type="password" id="edit-pass-${index}" placeholder="New Password" style="width:100%; padding:4px;">`;
 
-    btn.textContent = "Save";
-    btn.className = "btn btn-primary";
-    btn.onclick = () => onUpdateCredentials(index, originalUsername);
+    actionCell.innerHTML = `
+        <button class="btn btn-primary" onclick="onUpdateCredentials(${index}, '${originalUsername}')">Save</button>
+        <button class="btn btn-outline" onclick="cancelEditMode(${index})">Cancel</button>
+    `;
+}
+
+function cancelEditMode(index) {
+    const userCell = document.getElementById(`user-display-${index}`);
+    const passCell = document.getElementById(`pass-display-${index}`);
+    const actionCell = document.getElementById(`action-cell-${index}`);
+
+    const backup = editBackup[index];
+    if (backup) {
+        userCell.innerHTML = backup.userHTML;
+        passCell.innerHTML = backup.passHTML;
+        actionCell.innerHTML = backup.actionHTML;
+        delete editBackup[index];
+    }
 }
 
 async function onUpdateCredentials(index, originalUsername) {
@@ -124,6 +150,27 @@ async function onUpdateCredentials(index, originalUsername) {
             notify(err.message, true);
         }
     } catch (e) { notify("Update failed", true); }
+}
+
+async function onResetPassword(name) {
+    if (!confirm(`Reset password for ${name} to default (surname + current year)?`)) return;
+
+    try {
+        const res = await fetch(`${BASE_URL}/student/reset-password`, {
+            method: 'PATCH',
+            headers: getHeaders(),
+            body: JSON.stringify({ name: name })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            notify(data.message);
+        } else {
+            notify(data.message, true);
+        }
+    } catch (e) {
+        notify("Reset request failed", true);
+    }
 }
 
 // --- 2. INDIVIDUAL REGISTRATION ---
