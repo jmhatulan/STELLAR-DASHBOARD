@@ -532,8 +532,12 @@
       <div class="card">
         <div class="card-header">Challenge Performance</div>
         <div class="challenge-performance">
-          <div class="performance-score">0 PTS.</div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+            <div class="performance-score">0 PTS.</div>
+            <div id="performance-indicator" style="font-size: 24px; font-weight: 600;"></div>
+          </div>
           <div class="performance-subtitle">Student's Average Challenge<br>Score</div>
+          <div id="average-comparison" style="font-size: 11px; color: #999; margin-top: 8px;">Class Average: -- PTS.</div>
         </div>
       </div>
 
@@ -545,26 +549,20 @@
         </div>
       </div>
 
-      <!-- Score Charts Section -->
+      <!-- Attempts Lists Section -->
       <div class="card full-width">
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
           <div>
-            <div class="card-header">Text Extract Score</div>
-            <div class="score-chart">
-              <canvas id="text-extract-chart"></canvas>
-            </div>
+            <div class="card-header">Text Extract Attempts</div>
+            <div id="text-extract-attempts" style="font-size: 13px; color: #666; max-height: 400px; overflow-y: auto;">No attempts</div>
           </div>
           <div>
-            <div class="card-header">Two Truths</div>
-            <div class="score-chart">
-              <canvas id="two-truths-chart"></canvas>
-            </div>
+            <div class="card-header">Two Truths Attempts</div>
+            <div id="two-truths-attempts" style="font-size: 13px; color: #666; max-height: 400px; overflow-y: auto;">No attempts</div>
           </div>
           <div>
-            <div class="card-header">Statement Scrutinize</div>
-            <div class="score-chart">
-              <canvas id="statement-scrutinize-chart"></canvas>
-            </div>
+            <div class="card-header">Statement Scrutinize Attempts</div>
+            <div id="scrutinize-attempts" style="font-size: 13px; color: #666; max-height: 400px; overflow-y: auto;">No attempts</div>
           </div>
         </div>
       </div>
